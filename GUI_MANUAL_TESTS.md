@@ -9,8 +9,8 @@ This checklist remains pending manual execution after the integration changes,
 including descriptive-text wrapping when the window is resized.
 
 Start with `python main.py`. Check layout at 1366×768, 1600×900 and 1920×1080
-(screen resolutions; allow for the taskbar and window chrome), the 1180×720 default
-and the 1000×680 minimum. At normal Windows scaling, check
+(screen resolutions; allow for the taskbar and window chrome), the 1180×700 default
+and the 1000×620 minimum. At normal Windows scaling, check
 active navigation highlighting, dialog resizing, keyboard focus/Tab order, readable dark-theme text and visible error messages.
 
 | Check | Steps and expected result |
@@ -24,7 +24,7 @@ active navigation highlighting, dialog resizing, keyboard focus/Tab order, reada
 | Edit | Select a row, Edit. Password starts masked. Change all desired fields and save. Stable record position is retained; table strength updates. Cancel leaves the record unchanged. |
 | Reveal / Hide | Select a record and click Reveal / Hide. Only then is its password readable. Click again, select another record, search or navigate away: the previous password disappears. |
 | Delete | Select a row and Delete. Cancel confirmation leaves it intact; confirming removes it and reports saved success. With no selection, show a helpful prompt. |
-| Generator | Test lengths 8, 16 and 128 with symbols on/off. Invalid typed values show an error. A new result is always hidden even if the previous result was shown. Show/hide works; strength appears. Nothing is copied automatically. |
+| Generator | Test lengths 8, 16 and 128 with symbols on/off. Slider steps keep the length within 8–128. A new result is always hidden even if the previous result was shown. Show/hide works; strength appears. Nothing is copied automatically. |
 | Use generated password | Click Use in Add Credential. Vault opens with a masked add form containing the generated value. Fill fictional service/username, save, then explicitly reveal to confirm it matches. |
 | Dashboard | Add weak, strong and duplicate fictional passwords. Reopen Dashboard after add/edit/delete; total, strong, weak and all records participating in reuse match expected values. Recommendations suggest replacing weak passwords and making reused passwords unique; an empty vault invites adding a credential, and no weak/reused passwords produces qualified encouragement. |
 | About & Credits | After unlocking, open About & Credits below Password Generator. Check all four names/roll numbers, Development Build, academic details, Subject Code 5.0CE202E02H and Under the Guidance of Dr. Rosy Madan (Professor), and footer. Check readability at both window sizes. Navigate back to each existing page, then lock from About: login replaces the sidebar and unlocking is required again. |
@@ -38,21 +38,23 @@ No manual checks above have been marked complete by the automated test suite.
 Inactivity auto-lock, multiple simultaneous writers, high-DPI scaling and
 platform-specific appearance need separate review before wider use.
 
-## Final visual polish pass (manual verification pending)
+## CustomTkinter redesign verification
 
-- Check the fixed-width sidebar, equal navigation widths, active page, bottom lock
-  separation and comfortable text contrast on every page.
-- Dashboard: check equal two-column cards and wrapped recommendations; actions
-  should remain visible at the minimum size with each recommendation state.
-- Vault: check the shared search/filter toolbar, table selection, both scrollbars,
-  muted red Delete action, zero-result feedback and safe password-free columns.
-- Dialogs: check 560×620 default and 520×620 minimum, required-field focus,
-  strength colors, masked generation, Tab, Enter, Escape and right-aligned actions.
-- Generator: check both surface panels, length/symbol controls, long generated
-  values scrolling inside the entry, Show control and disabled Use action before
-  generation. Check that option labels remain readable.
-- Login and About: check panel backgrounds, exact academic details and all four
-  team rows. Check all controls fit with Windows display scaling at 100% and
-  125%; adjust the window within the available desktop area as needed.
+The application was launched with a temporary fictional vault and its rendered
+windows inspected at 1180×700. This is a visual inspection and automated widget
+exercise, not a completed human mouse/keyboard acceptance pass.
 
-Automated tests do not establish visual appearance or mouse/keyboard usability.
+- [ ] Check every page at 1366×768 desktop resolution and 100% / 125% scaling.
+- [ ] At 1000×620, scroll vault rows; Show / Hide, Edit, Delete and Lock stay reachable.
+- [ ] Navigate long Dashboard and About pages with wheel, scrollbar and keyboard focus.
+- [ ] Verify setup/login feedback, three-attempt lockout, Enter and Tab order.
+- [ ] Add/edit/cancel; test live strength, embedded generation and failed-save retry.
+- [ ] Check live search, each strength/reuse filter, A–Z toggle and Reset filters.
+- [ ] Reveal, select another row, search, navigate and lock; previous secrets clear.
+- [ ] Generate at 8 and 128 characters with symbols on/off; Show and regenerate.
+- [ ] Use generated password in Add Credential, save and restart the app.
+- [ ] Confirm deletion cancellation and encrypted persistence with fictional data.
+- [ ] Check long website/usernames and long validation text in the scrollable dialog.
+
+Automated real-widget tests cover functional callbacks and vault action bounds at
+the minimum window size. They do not establish high-DPI or cross-platform usability.

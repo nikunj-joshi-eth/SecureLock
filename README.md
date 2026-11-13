@@ -3,7 +3,7 @@
 **Personal Digital Security Management System**
 
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![Interface Tkinter](https://img.shields.io/badge/Interface-Tkinter-334155)
+![Interface CustomTkinter](https://img.shields.io/badge/Interface-CustomTkinter-334155)
 ![Status Development Build](https://img.shields.io/badge/Status-Development%20Build-orange)
 
 A Python desktop application for managing personal login credentials in a local encrypted vault, generating passwords, and reviewing password strength and reuse. Developed as a second-year B.Tech Python Programming PBL project.
@@ -21,11 +21,11 @@ A Python desktop application for managing personal login credentials in a local 
 - Live website search, strength/reuse filters, reset controls and optional A–Z display sorting.
 - In-form password generation and live strength feedback; masked results by default.
 - Dashboard recommendations derived from existing counts, without a security score.
-- Dark Tkinter/ttk interface with About & Credits and four-member team details.
+- Dark CustomTkinter interface with About & Credits and four-member team details.
 
 ## Technologies
 
-Python 3.10+, Tkinter/ttk, `cryptography`, standard-library `unittest`, dataclasses, pathlib, JSON and Git. No web service or database server is required. JSON on disk contains encrypted ciphertext and public encryption metadata, rather than plaintext credential records.
+Python 3.10+, CustomTkinter, `cryptography`, standard-library `unittest`, dataclasses, pathlib, JSON and Git. No web service or database server is required. JSON on disk contains encrypted ciphertext and public encryption metadata, rather than plaintext credential records.
 
 ## Installation and usage
 
@@ -50,20 +50,23 @@ The vault is stored at `data/securelock.vault` relative to the project location,
 
 ## Screenshots
 
-Genuine screenshots are pending the final desktop verification pass. Use fictional data and hide all passwords before capturing:
+Genuine CustomTkinter application captures at 1180×700, using only fictional data:
 
-| View | Screenshot placeholder |
+| View | Screenshot |
 | --- | --- |
-| Setup / login | Pending genuine application capture |
-| Dashboard | Pending genuine application capture |
-| Credential Vault | Pending genuine application capture |
-| Password Generator | Pending genuine application capture |
-| About & Credits | Pending genuine application capture |
+| Setup | [Setup card](docs/screenshots/setup.png) |
+| Dashboard | [Password health overview](docs/screenshots/dashboard.png) |
+| Credential Vault | [Vault and fixed actions](docs/screenshots/vault.png) |
+| Password Generator | [Generator controls](docs/screenshots/generator.png) |
+
+See [verification results](FINAL_TEST_REPORT.md) and the pending
+[manual acceptance checklist](GUI_MANUAL_TESTS.md). Full high-DPI acceptance
+remains pending.
 
 ## Project architecture
 
 ```text
-main.py → Tkinter view → VaultController
+main.py → CustomTkinter view → VaultController
                           ├── authentication → crypto_utils + storage
                           ├── credentials → models
                           └── password_tools → models
@@ -77,7 +80,7 @@ main.py → Tkinter view → VaultController
 | `securelock_app/models.py` | Validated in-memory data models |
 | `securelock_app/credentials.py` | Credential CRUD and service search |
 | `securelock_app/password_tools.py` | Generation, strength, reuse and statistics |
-| `securelock_app/gui/` | Display-independent controller and Tkinter interface |
+| `securelock_app/gui/` | Display-independent controller and CustomTkinter interface |
 | `tests/` | Automated tests with fictional temporary data |
 | `securelock.py` | Unchanged, insecure plaintext CLI prototype |
 
