@@ -128,3 +128,14 @@ Subject to review and testing: inactivity locking, accessible layout and high-DP
 - Build status: Development Build; final manual evaluation pending
 
 The final academic report and presentation will be prepared only after the college submission format is available. No final release tag has been created as part of this integration.
+
+## Project maintenance and GitHub workflow
+
+- [Changelog](CHANGELOG.md) — implemented milestones and release history.
+- [Release checklist](RELEASING.md) — manual desktop acceptance, screenshot hygiene, tagging and publication steps.
+- [Security policy](SECURITY.md) — limitations and private vulnerability reporting.
+- [Contribution guide](CONTRIBUTING.md) — setup, testing and pull-request expectations.
+- [GitHub issue templates](.github/ISSUE_TEMPLATE/) and [pull request template](.github/pull_request_template.md) — consistent reports and reviews.
+- [Windows test workflow](.github/workflows/tests.yml) — executes automated tests on supported Python versions for pushes and pull requests. Its successful execution must be verified in the **Actions** tab; file presence is not proof that CI passed.
+
+**Repository status:** The GitHub repository is private. A published release does not automatically change visibility. There is no prebuilt Windows installer, no genuine screenshot gallery yet, and no independently validated security certification.
