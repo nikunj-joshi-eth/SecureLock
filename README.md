@@ -22,7 +22,10 @@ python main.py
 Tkinter is included with the standard Windows Python installer. On Linux, your
 distribution may require its Python Tk package. No additional GUI library is used.
 The application opens a dark desktop window with Dashboard, Credential Vault
-and Password Generator navigation.
+and Password Generator navigation. After unlocking, About & Credits shows the
+project description, four-member team, academic details and Development Build
+status. It appears below Password Generator; Lock Vault remains available.
+The subject code and coordinator name are placeholders for later completion.
 
 On first launch, create and confirm a master password of at least 8 characters.
 Later launches ask you to unlock the existing vault. Three failed authenticated
@@ -156,7 +159,7 @@ unsupported filesystems fail safely. See INTERFACES.md for full details.
 1. Nikunj Joshi — 25/SET/BCSE/137
 2. Khushi — 25/SET/BCSE/148
 3. Mansi — 25/SET/BCSE/131
-4. Sumit — 25/SET/BCSE/145
+4. Sumit Kumar — 25/SET/BCSE/145
 
 ## Original CLI prototype features
 - Displays the project title and all four team members
