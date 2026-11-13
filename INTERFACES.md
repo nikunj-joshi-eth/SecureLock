@@ -1,8 +1,8 @@
-# SecureLock shared interfaces — Phase 2D
+# SecureLock shared interfaces — Phase 2E
 
 Use Python 3.10 or newer and install `requirements.txt`. Models, authentication,
 cryptography, encrypted storage, credential CRUD and password tools are implemented.
-GUI functions still raise `NotImplementedError`. The original
+The Tkinter GUI is implemented with a separate `main.py` launcher. The original
 `securelock.py` remains a separate, insecure plaintext prototype. Imports do
 not prompt, open windows, access vault files or perform key derivation.
 
@@ -173,8 +173,28 @@ password values as duplicate-report keys.
 
 ## GUI and dependency direction
 
-`gui.main_window.main() -> None` will launch Tkinter in Phase 5. It currently
-raises NotImplementedError. Importing it does not import Tkinter or open windows.
+`gui.main_window.main() -> None` launches the Tkinter/ttk desktop application.
+Importing the module imports Tkinter but never creates a window or accesses a
+vault. `python main.py` uses project-relative `data/securelock.vault`.
+
+`gui.controller.VaultController(path: Path)` coordinates setup, login, lock,
+record listing/search, statistics and saved add/update/delete operations without
+requiring a display. It owns an optional `VaultSession`; it never retains a
+master password. `AppError` carries safe display messages, without backend
+exception details. Three decryption failures block further login calls until
+application restart (or a new login session after an authenticated lock).
+Malformed/missing/unreadable files are reported separately without setup fallback.
+Setup delegates overwrite refusal to authentication. Credential changes restore
+the original list contents on validation/save failure. Saving refuses a missing
+file detected before the write. This check is not a multi-process lock; backend
+last-writer-wins behavior and filesystem race limitations still apply.
+
+The view masks master, credential and generated passwords by default. Treeview
+rows contain only service, username and strength. Revealing is explicit, and
+selection changes hide revealed values. Navigation/locking clears tracked secret
+StringVars and destroys previous widgets/dialogs; locking also drops the session.
+Python/Tk cannot guarantee memory erasure. No clipboard auto-copy, inactivity
+lock, plaintext prototype migration or master-password recovery is provided.
 
 Models depend only on the standard library. Credentials/password tools depend
 on models. Storage and crypto are independent of GUI/authentication. Authentication
@@ -198,7 +218,10 @@ Credential tests cover validation without partial mutation, unique IDs, insertio
 order, Unicode case-insensitive search, and explicitly saved add/update/delete
 operations across encrypted reopenings. Password-tool tests cover generation,
 classification boundaries, patterns, exact duplicate groups, statistics,
-validation, no mutation and no output/logging/file access. GUI remains pending.
+validation, no mutation and no output/logging/file access. Display-free GUI tests
+cover authentication coordination, three-attempt lockout, encrypted CRUD and
+restart, statistics, safe errors, rollback, secret cleanup and safe table columns.
+Actual desktop interaction requires the checklist in GUI_MANUAL_TESTS.md.
 
 ## Security limitations
 
@@ -211,4 +234,5 @@ backup. AES-GCM does not detect rollback to an older valid encrypted file.
 Concurrent saves use last-writer-wins replacement; there is no multi-process
 locking. File fsync does not guarantee directory metadata durability after power
 loss. Filesystem permissions/ACLs and backups remain the user's responsibility.
-No plaintext prototype migration or launcher integration is provided.
+No plaintext prototype migration is provided. `main.py` launches the encrypted
+GUI; `securelock.py` remains the separate plaintext prototype.
