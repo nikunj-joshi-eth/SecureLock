@@ -80,6 +80,37 @@ class VaultController:
         return (credentials.search_credentials(vault, query) if query.strip()
                 else credentials.list_credentials(vault))
 
+    def filtered_records(self, query="", strength="All", alphabetical=True):
+        """Filter a display copy; never rearrange the persisted vault list."""
+        records = self.records(query)
+        if strength == "Reused":
+            reused = {identifier for group in password_tools.find_duplicate_passwords(self._vault())
+                      for identifier in group}
+            records = [record for record in records if record.id in reused]
+        elif strength in ("Weak", "Moderate", "Strong"):
+            records = [record for record in records
+                       if password_tools.estimate_strength(record.password) == strength.lower()]
+        if alphabetical:
+            records = sorted(records, key=lambda record: record.website.casefold())
+        return records
+
+    def recommendations(self):
+        """Explain existing statistics without inventing a security score."""
+        stats = self.statistics()
+        if not stats["total"]:
+            return ["Add your first credential to review password strength and reuse."]
+        messages = []
+        if stats["weak"]:
+            messages.append(f"Replace {stats['weak']} weak password(s) with longer, unique passwords.")
+        if stats["reused"]:
+            messages.append(f"Make passwords unique for {stats['reused']} credentials with reused passwords.")
+        if stats["moderate"]:
+            messages.append(f"Consider strengthening {stats['moderate']} moderate password(s).")
+        if not stats["weak"] and not stats["reused"]:
+            messages.append("Good progress: no weak or reused passwords found by the current checks.")
+        messages.append("Strength is an estimate. Keep your master passphrase unique and protect your device.")
+        return messages
+
     def statistics(self):
         return password_tools.security_statistics(self._vault())
 

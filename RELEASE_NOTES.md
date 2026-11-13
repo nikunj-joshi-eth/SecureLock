@@ -1,6 +1,6 @@
 # Release notes — final integration candidate
 
-Status: **Development Build**, prepared on `feature/final-integration`. This document does not announce a published release or a v1.0.0 tag.
+Status: **Development Build**, prepared on `feature/final-ui-refresh`. This document does not announce a published release or a v1.0.0 tag.
 
 ## Implemented functionality
 
@@ -10,6 +10,14 @@ Status: **Development Build**, prepared on `feature/final-integration`. This doc
 - Credential add/search/edit/delete with persistence and failed-save rollback.
 - Local secure-random password generation, strength estimates and reuse statistics.
 - Dark Tkinter Dashboard, Credential Vault, Generator and About & Credits.
+
+## Final UI refresh (Issue #18)
+
+- Active sidebar navigation, consistent dark navy controls and clearer dashboard recommendations.
+- Live website search, strength/reuse filters, optional A–Z display sorting, clear/reset and friendly empty states.
+- Resizable Add/Edit forms with shared password generation, masking and live strength feedback.
+- Updated Subject Code 5.0CE202E02H and Under the Guidance of Dr. Rosy Madan (Professor); team unchanged.
+- No dependencies, crypto settings, stored ordering or version-1 format changes.
 
 ## Integration improvements
 

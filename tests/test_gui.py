@@ -59,6 +59,43 @@ class ControllerTests(unittest.TestCase):
         for value in (MASTER, "Raven372!xyzt", "changed.example", "new-user"):
             self.assertNotIn(value.encode(), encrypted)
 
+    def test_display_filters_sort_and_preserve_storage_order(self):
+        self.setup_vault()
+        weak = self.app.add("zeta", "user", "tiny")
+        strong = self.app.add("Alpha", "user", "Raven372!xyzt")
+        moderate = self.app.add("beta", "user", "Abc492xy")
+        duplicate = self.app.add("Gamma", "user", "tiny")
+        original = self.app.records()
+        self.assertEqual(self.app.filtered_records(), [strong, moderate, duplicate, weak])
+        self.assertEqual(self.app.filtered_records(" ALP "), [strong])
+        self.assertEqual(self.app.filtered_records("no match"), [])
+        self.assertEqual(self.app.filtered_records(strength="Weak"), [duplicate, weak])
+        self.assertEqual(self.app.filtered_records(strength="Moderate"), [moderate])
+        self.assertEqual(self.app.filtered_records(strength="Strong"), [strong])
+        self.assertEqual(self.app.filtered_records(strength="Reused"), [duplicate, weak])
+        self.assertEqual(self.app.filtered_records("z", "Reused"), [weak])
+        self.assertEqual(self.app.filtered_records(alphabetical=False), original)
+        self.assertEqual(self.app.records(), original)
+        self.app.lock()
+        self.app.login(MASTER)
+        self.assertEqual(self.app.records(), original)
+
+    def test_recommendations_follow_statistics(self):
+        self.setup_vault()
+        self.assertIn("first credential", " ".join(self.app.recommendations()))
+        first = self.app.add("one", "user", "tiny")
+        second = self.app.add("two", "user", "tiny")
+        messages = " ".join(self.app.recommendations())
+        self.assertIn("2 weak", messages)
+        self.assertIn("2 credentials with reused", messages)
+        self.app.update(first.id, "one", "user", "Raven372!xyzt")
+        self.app.delete(second.id)
+        messages = " ".join(self.app.recommendations())
+        self.assertIn("Good progress", messages)
+        self.assertIn("estimate", messages)
+        self.app.add("three", "user", "Abc492xy")
+        self.assertIn("1 moderate", " ".join(self.app.recommendations()))
+
     def test_three_wrong_attempts_block_even_correct_password(self):
         self.setup_vault()
         self.app.lock()
@@ -155,6 +192,36 @@ class ControllerTests(unittest.TestCase):
 
 
 class ViewCoordinationTests(unittest.TestCase):
+    def test_typing_search_refreshes_without_submit_and_reset_restores_defaults(self):
+        app = SecureLockApp.__new__(SecureLockApp)
+        app.root = Mock()
+        app.shell = Mock()
+        app.secret = Mock()
+        app.button = Mock()
+        app.refresh_table = Mock()
+        with patch("securelock_app.gui.main_window.tk.StringVar", side_effect=[Mock(), Mock()]), \
+                patch("securelock_app.gui.main_window.tk.BooleanVar"), \
+                patch("securelock_app.gui.main_window.ttk.Frame"), \
+                patch("securelock_app.gui.main_window.ttk.Label"), \
+                patch("securelock_app.gui.main_window.ttk.Entry"), \
+                patch("securelock_app.gui.main_window.ttk.Combobox"), \
+                patch("securelock_app.gui.main_window.ttk.Checkbutton"), \
+                patch("securelock_app.gui.main_window.ttk.Treeview"), \
+                patch("securelock_app.gui.main_window.ttk.Scrollbar"):
+            app.vault_page()
+        app.refresh_table.reset_mock()
+        # Exercise the write callback registered on the actual query widget variable.
+        mode, callback = app.query.trace_add.call_args.args
+        self.assertEqual(mode, "write")
+        callback("query", "", "write")
+        app.refresh_table.assert_called_once_with()
+        app.strength_filter.set("Weak")
+        app.alphabetical.set(False)
+        app.reset_filters()
+        app.query.set.assert_called_once_with("")
+        app.strength_filter.set.assert_called_with("All")
+        app.alphabetical.set.assert_called_with(True)
+
     def test_all_session_pages_redirect_when_locked(self):
         app = SecureLockApp.__new__(SecureLockApp)
         app.controller = Mock(session=None)
@@ -189,8 +256,8 @@ class ViewCoordinationTests(unittest.TestCase):
                 "4. Sumit Kumar — 25/SET/BCSE/145",
                 "Programme: B.Tech Computer Science and Engineering",
                 "Subject: Python Programming",
-                "Subject Code: [SUBJECT CODE]",
-                "Under the Supervision of: [COORDINATOR NAME]",
+                "Subject Code: 5.0CE202E02H",
+                "Under the Guidance of:\nDr. Rosy Madan (Professor)",
                 "Development Build",
                 "Developed as part of the Python Programming PBL.",
             ):
@@ -201,6 +268,9 @@ class ViewCoordinationTests(unittest.TestCase):
                  ("Password Generator", app.generator_page),
                  ("About & Credits", app.about_page), ("Lock Vault", app.lock)],
             )
+            active = [call.kwargs["text"] for call in button.call_args_list
+                      if call.kwargs.get("style") == "Active.TButton"]
+            self.assertEqual(active, ["About & Credits"])
         app.clear_page.assert_called_once_with()
         app.controller.assert_not_called()
 
@@ -216,6 +286,15 @@ class ViewCoordinationTests(unittest.TestCase):
         app.lock()
         app.controller.lock.assert_called_once_with()
         app.show_login.assert_called_once_with()
+
+    def test_form_generation_uses_shared_generator_and_remasks(self):
+        password, entry, visible = Mock(), Mock(), Mock()
+        with patch("securelock_app.gui.main_window.generate_password", return_value="fictional-generated") as generate:
+            SecureLockApp.generate_into_form(password, entry, visible)
+        generate.assert_called_once_with()
+        password.set.assert_called_once_with("fictional-generated")
+        visible.set.assert_called_once_with(False)
+        entry.configure.assert_called_once_with(show="•")
 
     def test_default_location_is_project_data(self):
         self.assertEqual(DEFAULT_VAULT.parent, Path(__file__).resolve().parents[1] / "data")
@@ -247,7 +326,11 @@ class ViewCoordinationTests(unittest.TestCase):
         app.query.get.return_value = ""
         app.feedback = Mock()
         app.controller = Mock()
-        app.controller.records.return_value = [Credential("fake-id", "fake.example", "fake-user", "fictional-secret")]
+        app.strength_filter = Mock()
+        app.strength_filter.get.return_value = "All"
+        app.alphabetical = Mock()
+        app.alphabetical.get.return_value = True
+        app.controller.filtered_records.return_value = [Credential("fake-id", "fake.example", "fake-user", "fictional-secret")]
         app.refresh_table()
         app.tree.insert.assert_called_once_with("", "end", iid="fake-id", values=("fake.example", "fake-user", "moderate"))
 

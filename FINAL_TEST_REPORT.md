@@ -1,3 +1,36 @@
+# Final UI refresh verification — Issue #18
+
+Verification on 2026-11-13, branch `feature/final-ui-refresh`. Latest main was pulled before branching. The unrelated untracked `h origin main` file was preserved and excluded from the commit. No existing vault was opened.
+
+## Actual automated results
+
+| Command | Result |
+| --- | --- |
+| `python -m unittest discover -s tests -v` | 73 tests passed in 2.580 s; no failures or skips |
+| `python -m compileall -q securelock_app tests` | Passed |
+| `python -m pip check` | No broken requirements found |
+| `git diff --check` | Passed |
+
+New checks cover controller website search combined with all strength/reuse filters, optional alphabetical sorting, unchanged stored order after unlock, statistics-derived recommendations, shared in-form generation/remasking, query write callback wiring, reset controls, current academic details and active Credits navigation. Existing authentication, lock/unlock, encrypted persistence, tamper detection and failed-save rollback tests still pass.
+
+An initial edit introduced a Windows text-encoding error; source files were restored to UTF-8 and the suite rerun successfully. A subsequent display-free Tcl-variable probe failed because this interpreter could not locate a usable `init.tcl`. The callback test now uses mocks, consistent with the other display-free view tests. No GUI was manually operated. Repair/verify the local Python Tcl/Tk installation before desktop evaluation.
+
+## Compatibility and limits
+
+Only GUI/controller code, GUI tests and documentation changed. Version-1 encryption/storage code, Scrypt parameters, AES-GCM settings and `securelock.py` remain unchanged. Filtering/sorting operates on a display copy, not stored order. Compatibility evidence is unchanged backend code and passing encrypted lifecycle tests; no pre-existing user vault was tested.
+
+No new dependencies, plaintext persistence, clipboard auto-copy or security scoring algorithm were introduced. Strength remains a heuristic and recommendations do not guarantee safety.
+
+## Pending desktop evaluation
+
+Run [GUI_MANUAL_TESTS.md](GUI_MANUAL_TESTS.md) using fictional data: verify window resizing at 1180×800 and the 1020×760 minimum, high-DPI appearance, navigation, table scrollbars, live filters, form focus/validation/generation, generator transfer, lock cleanup and permission-denied save behavior. Genuine screenshots remain placeholders. Existing limitations include no inactivity lock, recovery bypass, concurrent-writer protection or guaranteed memory erasure.
+
+This phase does not create an academic report or presentation, merge main, publish a release or create a tag.
+
+---
+
+The earlier integration report below is retained as historical verification, not a claim that those extra inspections were repeated for this refresh.
+
 # Final test report
 
 ## Scope and environment
