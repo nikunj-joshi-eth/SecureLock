@@ -149,7 +149,8 @@ class SecureLockApp:
         sidebar.pack(side="left", fill="y")
         ttk.Label(sidebar, text="SecureLock", style="Heading.TLabel").pack(pady=(6, 28))
         for text, command in (("Dashboard", self.dashboard), ("Credential Vault", self.vault_page),
-                              ("Password Generator", self.generator_page)):
+                              ("Password Generator", self.generator_page),
+                              ("About & Credits", self.about_page)):
             ttk.Button(sidebar, text=text, command=command).pack(fill="x", pady=6)
         ttk.Button(sidebar, text="Lock Vault", command=self.lock).pack(side="bottom", fill="x", pady=12)
         body = ttk.Frame(self.root, padding=30)
@@ -157,6 +158,33 @@ class SecureLockApp:
         ttk.Label(body, text=title, style="Title.TLabel").pack(anchor="w")
         ttk.Label(body, text=subtitle, style="Muted.TLabel", wraplength=650).pack(anchor="w", pady=(4, 22))
         return body
+
+    def about_page(self):
+        if self.controller.session is None:
+            self.show_login()
+            return
+        body = self.shell("About & Credits", "SecureLock — Personal Digital Security Management System")
+        ttk.Label(body, padding=0, text="Python Programming — Project-Based Learning (PBL)",
+                  style="Heading.TLabel", wraplength=600).pack(anchor="w")
+        ttk.Label(body, padding=0, text="Development Build", style="Muted.TLabel").pack(anchor="w", pady=(0, 8))
+        ttk.Label(body, padding=0, text="A desktop application for managing personal credentials in a local encrypted vault, "
+                  "generating passwords and reviewing password strength.",
+                  wraplength=600).pack(anchor="w", pady=(0, 12))
+        credits = ttk.Frame(body, padding=(18, 10), style="Panel.TFrame")
+        credits.pack(fill="x")
+        ttk.Label(credits, padding=0, text="Developed By", style="Panel.TLabel",
+                  font=("Segoe UI", 13, "bold")).pack(anchor="w")
+        for member in ("1. Nikunj Joshi — 25/SET/BCSE/137", "2. Khushi — 25/SET/BCSE/148",
+                       "3. Mansi — 25/SET/BCSE/131", "4. Sumit Kumar — 25/SET/BCSE/145"):
+            ttk.Label(credits, padding=0, text=member, style="Panel.TLabel").pack(anchor="w")
+        ttk.Label(body, padding=0, text="Academic Details", style="Heading.TLabel").pack(anchor="w", pady=(8, 0))
+        ttk.Label(body, padding=0, text="Programme: B.Tech Computer Science and Engineering\n"
+                  "Subject: Python Programming\n"
+                  "Subject Code: [SUBJECT CODE]\n"
+                  "Under the Supervision of: [COORDINATOR NAME]",
+                  wraplength=600, justify="left").pack(anchor="w")
+        ttk.Label(body, padding=0, text="Developed as part of the Python Programming PBL.",
+                  style="Muted.TLabel", wraplength=600).pack(anchor="w", pady=(8, 0))
 
     def dashboard(self):
         body = self.shell("Welcome to SecureLock", "Your personal security overview")

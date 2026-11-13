@@ -143,6 +143,54 @@ class ControllerTests(unittest.TestCase):
 
 
 class ViewCoordinationTests(unittest.TestCase):
+    def test_about_content_and_unlocked_navigation(self):
+        app = SecureLockApp.__new__(SecureLockApp)
+        app.root = Mock()
+        app.controller = Mock()
+        app.clear_page = Mock()
+        with patch("securelock_app.gui.main_window.ttk.Frame"), \
+                patch("securelock_app.gui.main_window.ttk.Label") as label, \
+                patch("securelock_app.gui.main_window.ttk.Button") as button:
+            app.about_page()
+            texts = [call.kwargs["text"] for call in label.call_args_list]
+            content = "\n".join(texts)
+            for expected in (
+                "SecureLock — Personal Digital Security Management System",
+                "Python Programming — Project-Based Learning (PBL)",
+                "1. Nikunj Joshi — 25/SET/BCSE/137",
+                "2. Khushi — 25/SET/BCSE/148",
+                "3. Mansi — 25/SET/BCSE/131",
+                "4. Sumit Kumar — 25/SET/BCSE/145",
+                "Programme: B.Tech Computer Science and Engineering",
+                "Subject: Python Programming",
+                "Subject Code: [SUBJECT CODE]",
+                "Under the Supervision of: [COORDINATOR NAME]",
+                "Development Build",
+                "Developed as part of the Python Programming PBL.",
+            ):
+                self.assertIn(expected, content)
+            self.assertEqual(
+                [(call.kwargs["text"], call.kwargs["command"]) for call in button.call_args_list],
+                [("Dashboard", app.dashboard), ("Credential Vault", app.vault_page),
+                 ("Password Generator", app.generator_page),
+                 ("About & Credits", app.about_page), ("Lock Vault", app.lock)],
+            )
+        app.clear_page.assert_called_once_with()
+        app.controller.assert_not_called()
+
+    def test_about_requires_unlock_and_lock_returns_to_login(self):
+        app = SecureLockApp.__new__(SecureLockApp)
+        app.controller = Mock(session=None)
+        app.show_login = Mock()
+        app.shell = Mock()
+        app.about_page()
+        app.shell.assert_not_called()
+        app.show_login.assert_called_once_with()
+        app.show_login.reset_mock()
+        app.lock()
+        app.controller.lock.assert_called_once_with()
+        app.show_login.assert_called_once_with()
+
     def test_default_location_is_project_data(self):
         self.assertEqual(DEFAULT_VAULT.parent, Path(__file__).resolve().parents[1] / "data")
 
