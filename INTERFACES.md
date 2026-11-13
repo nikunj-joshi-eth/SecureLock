@@ -1,7 +1,7 @@
-# SecureLock shared interfaces — Phase 2B
+# SecureLock shared interfaces — Phase 2C
 
 Use Python 3.10 or newer and install `requirements.txt`. Models, authentication,
-cryptography and encrypted storage are implemented. Credential CRUD, password
+cryptography, encrypted storage and credential CRUD are implemented. Password
 tools and GUI functions still raise `NotImplementedError`. The original
 `securelock.py` remains a separate, insecure plaintext prototype. Imports do
 not prompt, open windows, access vault files or perform key derivation.
@@ -12,14 +12,14 @@ not prompt, open windows, access vault files or perform key derivation.
 dataclass. All fields must be strings containing non-whitespace content.
 Values are preserved exactly, including password spaces. Website is a service
 label, not necessarily a URL. No strength policy is imposed on saved passwords.
-The credential module will assign stable, nonblank unique IDs. Password is
+The credential module assigns stable, unique IDs with `uuid.uuid4()`. Password is
 excluded from `repr`, but remains plaintext in memory; do not log or serialize
 the object to disk.
 
 `Vault(credentials: list[Credential] = <new empty list>)` holds unlocked data.
 Each instance has its own default list. IDs must be unique within the vault;
 duplicate websites, usernames, and passwords are allowed. The list is mutable,
-so future operations must revalidate it before changing or saving it.
+so operations revalidate it before reading, changing or saving it.
 
 | Helper signature | Output | Errors |
 | --- | --- | --- |
@@ -115,7 +115,7 @@ leave encrypted staging files. The parent directory must already exist.
 Authentication coordinates in-memory serialization/model construction; storage
 only handles the encrypted envelope. No plaintext file helpers are provided.
 
-## Credential management (`credentials.py`, Khushi)
+## Credential management (`credentials.py`, Khushi, implemented)
 
 | Signature | Output and behavior |
 | --- | --- |
@@ -125,11 +125,15 @@ only handles the encrypted envelope. No plaintext file helpers are provided.
 | `update_credential(vault: Vault, credential_id: str, website: str, username: str, password: str) -> Credential` | Replace all login fields, preserving ID and position; return new record |
 | `delete_credential(vault: Vault, credential_id: str) -> None` | Remove matching record |
 
-Future errors: TypeError for wrong types, ValueError for invalid vault or blank
+Errors: TypeError for wrong types, ValueError for invalid vault or blank
 fields/query/ID, KeyError for missing update/delete ID. Validate before mutation;
 failure leaves the vault unchanged. Operations only change memory. The caller
 explicitly saves through authentication and handles any save failure. Results
 contain passwords in memory; the GUI must select safe fields for display.
+Updates require all three login fields; values are preserved exactly. UUID
+collisions are retried before appending. Lists returned by list/search are
+separate lists containing the immutable records. These functions perform no
+file I/O and do not import authentication or storage.
 
 ## Password tools (`password_tools.py`, Mansi)
 
@@ -169,8 +173,10 @@ python -m unittest discover -s tests -v
 
 Tests use temporary directories and fictional credentials. They cover model
 validation, encrypted round trips, wrong passwords, metadata/ciphertext tampering,
-setup races, invalid sessions, failed writes, and salt/nonce generation. GUI,
-credential CRUD and password tools remain outside this phase.
+setup races, invalid sessions, failed writes, and salt/nonce generation.
+Credential tests cover validation without partial mutation, unique IDs, insertion
+order, Unicode case-insensitive search, and explicitly saved add/update/delete
+operations across encrypted reopenings. GUI and password tools remain pending.
 
 ## Security limitations
 
