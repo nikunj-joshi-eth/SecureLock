@@ -141,8 +141,34 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(output.getvalue(), "")
         self.assertEqual(self.app.records(), [])
 
+    def test_missing_record_reports_selection_error_without_saving(self):
+        self.setup_vault()
+        before = self.path.read_bytes()
+        with patch("securelock_app.gui.controller.authentication.save_vault") as save:
+            for operation in (lambda: self.app.delete("missing"),
+                              lambda: self.app.update("missing", "fake", "fake", "fake")):
+                with self.assertRaisesRegex(AppError, "no longer available"):
+                    operation()
+            save.assert_not_called()
+        self.assertEqual(self.app.records(), [])
+        self.assertEqual(self.path.read_bytes(), before)
+
 
 class ViewCoordinationTests(unittest.TestCase):
+    def test_all_session_pages_redirect_when_locked(self):
+        app = SecureLockApp.__new__(SecureLockApp)
+        app.controller = Mock(session=None)
+        app.show_login = Mock()
+        app.clear_page = Mock()
+        with patch("securelock_app.gui.main_window.ttk.Frame") as frame:
+            for page in (app.dashboard, app.vault_page, app.generator_page, app.about_page):
+                with self.subTest(page=page.__name__):
+                    app.show_login.reset_mock()
+                    page()
+                    app.show_login.assert_called_once_with()
+            frame.assert_not_called()
+        app.clear_page.assert_not_called()
+
     def test_about_content_and_unlocked_navigation(self):
         app = SecureLockApp.__new__(SecureLockApp)
         app.root = Mock()

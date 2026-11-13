@@ -1,1 +1,1 @@
-"""Shared foundation for SecureLock; feature implementations are pending."""
+"""SecureLock encrypted desktop application and testable backend modules."""

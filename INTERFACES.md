@@ -1,4 +1,4 @@
-# SecureLock shared interfaces — Phase 2E
+# SecureLock shared interfaces — desktop integration
 
 Use Python 3.10 or newer and install `requirements.txt`. Models, authentication,
 cryptography, encrypted storage, credential CRUD and password tools are implemented.
@@ -198,8 +198,8 @@ lock, plaintext prototype migration or master-password recovery is provided.
 
 Models depend only on the standard library. Credentials/password tools depend
 on models. Storage and crypto are independent of GUI/authentication. Authentication
-uses models and will coordinate storage/crypto. GUI will call authentication,
-credentials, and password tools. No lower-level module imports the GUI or the
+uses models and coordinates storage/crypto. GUI calls authentication,
+credentials, and password tools through its controller. No lower-level module imports the GUI or the
 root prototype. Package initializers have no startup side effects.
 
 ## Verification

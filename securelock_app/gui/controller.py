@@ -88,7 +88,10 @@ class VaultController:
         previous = list(vault.credentials)  # Records are frozen.
         try:
             result = operation(vault, *args)
-        except (ValueError, TypeError, KeyError):
+        except KeyError:
+            vault.credentials[:] = previous
+            raise AppError("This credential is no longer available. Refresh the vault and select a record.") from None
+        except (ValueError, TypeError):
             vault.credentials[:] = previous
             raise AppError("Enter a service, username and password with non-space content.") from None
         try:
