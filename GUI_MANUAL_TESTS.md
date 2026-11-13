@@ -8,8 +8,10 @@ Final integration automated results are in [FINAL_TEST_REPORT.md](FINAL_TEST_REP
 This checklist remains pending manual execution after the integration changes,
 including descriptive-text wrapping when the window is resized.
 
-Start with `python main.py`. Check layout at 1080×720 and the 900×620 minimum,
-keyboard focus/Tab order, readable dark-theme text and visible error messages.
+Start with `python main.py`. Check layout at 1366×768, 1600×900 and 1920×1080
+(screen resolutions; allow for the taskbar and window chrome), the 1180×720 default
+and the 1000×680 minimum. At normal Windows scaling, check
+active navigation highlighting, dialog resizing, keyboard focus/Tab order, readable dark-theme text and visible error messages.
 
 | Check | Steps and expected result |
 | --- | --- |
@@ -17,15 +19,15 @@ keyboard focus/Tab order, readable dark-theme text and visible error messages.
 | Existing-file protection | Restart: see login, never setup. An existing malformed file also shows login and must not be overwritten. If a file appears during setup, creation fails safely. |
 | Correct login | Enter the fictional master passphrase. Dashboard opens with expected totals. |
 | Three wrong passwords | Lock, submit three incorrect nonblank passwords. Remaining attempts decrease; after the third the entry/button are disabled. Enter cannot bypass the limit. Restart and use the correct passphrase. |
-| Add | Open Vault, Add. All fields are required; password is masked, Show toggles it. Save a fictional record and see success only after persistence. Cancel saves nothing. |
-| Search | Search a partial service name with different case. Matching rows appear in order. Clear or a blank query shows all rows; no match shows zero. No table cell contains a password. |
+| Add | Open Vault, Add. All fields are required; password is masked, Show toggles it. Save a fictional record and see success only after persistence. Generate Password fills the field and remasks it; typing updates the strength estimate. Enter saves and Escape cancels. Cancel saves nothing. |
+| Search | Type a partial service name with different case without pressing Enter. Matching rows update immediately. Test All, Weak, Moderate, Strong and Reused, including combined search. Toggle Website A–Z; disabled sorting preserves stored insertion order. Reset clears query and restores All/A–Z. Clear or a blank query shows all rows; no match shows zero. No table cell contains a password. |
 | Edit | Select a row, Edit. Password starts masked. Change all desired fields and save. Stable record position is retained; table strength updates. Cancel leaves the record unchanged. |
 | Reveal / Hide | Select a record and click Reveal / Hide. Only then is its password readable. Click again, select another record, search or navigate away: the previous password disappears. |
 | Delete | Select a row and Delete. Cancel confirmation leaves it intact; confirming removes it and reports saved success. With no selection, show a helpful prompt. |
 | Generator | Test lengths 8, 16 and 128 with symbols on/off. Invalid typed values show an error. A new result is always hidden even if the previous result was shown. Show/hide works; strength appears. Nothing is copied automatically. |
 | Use generated password | Click Use in Add Credential. Vault opens with a masked add form containing the generated value. Fill fictional service/username, save, then explicitly reveal to confirm it matches. |
-| Dashboard | Add weak, strong and duplicate fictional passwords. Reopen Dashboard after add/edit/delete; total, strong, weak and all records participating in reuse match expected values. |
-| About & Credits | After unlocking, open About & Credits below Password Generator. Check all four names/roll numbers, Development Build, academic details, literal [SUBJECT CODE] and [COORDINATOR NAME], and footer. Check readability at both window sizes. Navigate back to each existing page, then lock from About: login replaces the sidebar and unlocking is required again. |
+| Dashboard | Add weak, strong and duplicate fictional passwords. Reopen Dashboard after add/edit/delete; total, strong, weak and all records participating in reuse match expected values. Recommendations suggest replacing weak passwords and making reused passwords unique; an empty vault invites adding a credential, and no weak/reused passwords produces qualified encouragement. |
+| About & Credits | After unlocking, open About & Credits below Password Generator. Check all four names/roll numbers, Development Build, academic details, Subject Code 5.0CE202E02H and Under the Guidance of Dr. Rosy Madan (Professor), and footer. Check readability at both window sizes. Navigate back to each existing page, then lock from About: login replaces the sidebar and unlocking is required again. |
 | Lock / unlock | Reveal a password, then Lock. Login replaces all session pages. Repeat from Generator. Locking via the application cleanup path closes any open credential dialog and clears its fields. Unlock requires authentication again. |
 | Restart and persistence | Save changes, close the window and restart. Correct login restores changes. Inspect only the fictional vault: JSON contains version/salt/nonce/ciphertext, with no plaintext master password or credential fields. |
 | Corrupted vault | Back up the fictional encrypted vault, close the app, replace the test file with invalid JSON, restart and attempt login. See a safe damaged/unsupported message; no empty vault or overwrite occurs. Restore backup. Ciphertext tampering should fail unlock too. |
@@ -35,3 +37,22 @@ keyboard focus/Tab order, readable dark-theme text and visible error messages.
 No manual checks above have been marked complete by the automated test suite.
 Inactivity auto-lock, multiple simultaneous writers, high-DPI scaling and
 platform-specific appearance need separate review before wider use.
+
+## Final visual polish pass (manual verification pending)
+
+- Check the fixed-width sidebar, equal navigation widths, active page, bottom lock
+  separation and comfortable text contrast on every page.
+- Dashboard: check equal two-column cards and wrapped recommendations; actions
+  should remain visible at the minimum size with each recommendation state.
+- Vault: check the shared search/filter toolbar, table selection, both scrollbars,
+  muted red Delete action, zero-result feedback and safe password-free columns.
+- Dialogs: check 560×620 default and 520×620 minimum, required-field focus,
+  strength colors, masked generation, Tab, Enter, Escape and right-aligned actions.
+- Generator: check both surface panels, length/symbol controls, long generated
+  values scrolling inside the entry, Show control and disabled Use action before
+  generation. Check that option labels remain readable.
+- Login and About: check panel backgrounds, exact academic details and all four
+  team rows. Check all controls fit with Windows display scaling at 100% and
+  125%; adjust the window within the available desktop area as needed.
+
+Automated tests do not establish visual appearance or mouse/keyboard usability.

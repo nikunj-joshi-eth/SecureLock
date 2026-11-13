@@ -236,3 +236,9 @@ locking. File fsync does not guarantee directory metadata durability after power
 loss. Filesystem permissions/ACLs and backups remain the user's responsibility.
 No plaintext prototype migration is provided. `main.py` launches the encrypted
 GUI; `securelock.py` remains the separate plaintext prototype.
+
+## Final UI refresh controller helpers
+
+`VaultController.filtered_records(query="", strength="All", alphabetical=True)` returns a display copy. Website matching uses existing casefolded substring search. Strength choices are All, Weak, Moderate, Strong and Reused; Reused uses existing duplicate credential IDs. Optional A–Z sorting uses website casefold and never changes vault order. `records()` retains its insertion-order contract.
+
+`VaultController.recommendations()` returns display strings derived from existing statistics: empty-vault guidance, weak/reuse actions, optional moderate advice and qualified encouragement when neither weak nor reused entries are found. It defines no security score.

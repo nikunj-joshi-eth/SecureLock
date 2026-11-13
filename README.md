@@ -18,6 +18,9 @@ A Python desktop application for managing personal login credentials in a local 
 - Hidden passwords, explicit reveal, delete confirmation and manual vault locking.
 - Password generation (8–128 characters, optional symbols) using `secrets`.
 - Explainable strength estimates, duplicate detection and dashboard statistics.
+- Live website search, strength/reuse filters, reset controls and optional A–Z display sorting.
+- In-form password generation and live strength feedback; masked results by default.
+- Dashboard recommendations derived from existing counts, without a security score.
 - Dark Tkinter/ttk interface with About & Credits and four-member team details.
 
 ## Technologies
@@ -120,8 +123,8 @@ Subject to review and testing: inactivity locking, accessible layout and high-DP
 
 - Programme: B.Tech Computer Science and Engineering, second year
 - Subject: Python Programming — Project-Based Learning
-- Subject Code: [SUBJECT CODE]
-- Coordinator: [COORDINATOR NAME]
+- Subject Code: 5.0CE202E02H
+- Under the Guidance of: Dr. Rosy Madan (Professor)
 - Build status: Development Build; final manual evaluation pending
 
 The final academic report and presentation will be prepared only after the college submission format is available. No final release tag has been created as part of this integration.
