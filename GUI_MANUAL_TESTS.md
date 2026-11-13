@@ -4,6 +4,10 @@ Use fictional credentials only. These are manual checks, not claims of executed
 GUI interaction tests. Run in an isolated project copy so an existing vault is
 not disturbed. Keep any test vaults inside its ignored `data/` directory.
 
+Final integration automated results are in [FINAL_TEST_REPORT.md](FINAL_TEST_REPORT.md).
+This checklist remains pending manual execution after the integration changes,
+including descriptive-text wrapping when the window is resized.
+
 Start with `python main.py`. Check layout at 1080×720 and the 900×620 minimum,
 keyboard focus/Tab order, readable dark-theme text and visible error messages.
 

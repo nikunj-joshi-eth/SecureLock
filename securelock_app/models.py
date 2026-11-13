@@ -13,7 +13,7 @@ def validate_required_text(value: str, field_name: str) -> None:
 
 @dataclass(frozen=True)
 class Credential:
-    """One login; stable ID is assigned by the future credential module.
+    """One login; stable ID is assigned by the credential module.
 
     Passwords are preserved exactly and excluded from repr, not encrypted.
     Website is a service label, so it need not be a URL.
@@ -47,7 +47,7 @@ class Vault:
 
 
 def validate_vault(vault: Vault) -> None:
-    """Validate again before future operations, since the list is mutable."""
+    """Validate again before operations, since the list is mutable."""
     if not isinstance(vault, Vault):
         raise TypeError("vault must be a Vault")
     if not isinstance(vault.credentials, list):

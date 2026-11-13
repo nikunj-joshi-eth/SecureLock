@@ -29,6 +29,9 @@ Record actual contributions through individual GitHub commits and reviewed PRs; 
 
 ## Final verification record
 
+- Final integration candidate: automated checks passed (69 tests) on 2026-11-13; see [FINAL_TEST_REPORT.md](FINAL_TEST_REPORT.md) for the environment, commands and scope. Desktop manual acceptance and screenshots remain pending.
+- README, current architecture, project overview, contribution guidance and release notes are prepared on `feature/final-integration`. Final academic report/presentation await the college format; release approval remains pending.
+
 - User reported the initial desktop application worked and looked good after GUI smoke testing; a recorded final verification pass after credits integration is still needed.
 - Automated tests exist in the repository; record the final local test command, actual passing count, environment, and outcome in the final QA report.
 - Test with **fictional credentials only**. The original `securelock.py` is a separate **insecure plaintext prototype**; use `python main.py` for the encrypted application.

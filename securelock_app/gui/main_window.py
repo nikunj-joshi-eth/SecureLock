@@ -144,6 +144,9 @@ class SecureLockApp:
         entry.focus_set()
 
     def shell(self, title, subtitle):
+        if self.controller.session is None:
+            self.show_login()
+            return None
         self.clear_page()
         sidebar = ttk.Frame(self.root, padding=22, style="Panel.TFrame")
         sidebar.pack(side="left", fill="y")
@@ -157,7 +160,15 @@ class SecureLockApp:
         body.pack(side="left", fill="both", expand=True)
         ttk.Label(body, text=title, style="Title.TLabel").pack(anchor="w")
         ttk.Label(body, text=subtitle, style="Muted.TLabel", wraplength=650).pack(anchor="w", pady=(4, 22))
+        body.bind("<Configure>", lambda event: self.wrap_labels(body, event.width))
         return body
+
+    @staticmethod
+    def wrap_labels(body, width):
+        """Keep descriptive text inside the available page width on resize."""
+        for child in body.winfo_children():
+            if isinstance(child, ttk.Label) and child.cget("wraplength"):
+                child.configure(wraplength=max(200, width - 60))
 
     def about_page(self):
         if self.controller.session is None:
@@ -188,6 +199,8 @@ class SecureLockApp:
 
     def dashboard(self):
         body = self.shell("Welcome to SecureLock", "Your personal security overview")
+        if body is None:
+            return
         stats = self.controller.statistics()
         cards = ttk.Frame(body)
         cards.pack(fill="x", pady=20)
@@ -207,6 +220,8 @@ class SecureLockApp:
 
     def vault_page(self):
         body = self.shell("Credential Vault", "Passwords stay hidden. Select a record to edit, delete or reveal it.")
+        if body is None:
+            return
         search = ttk.Frame(body)
         search.pack(fill="x")
         self.query = tk.StringVar(self.root)
@@ -357,6 +372,8 @@ class SecureLockApp:
 
     def generator_page(self):
         body = self.shell("Password Generator", "Create a unique password locally. Nothing is copied to your clipboard.")
+        if body is None:
+            return
         ttk.Label(body, text="Password length (8–128)").pack(anchor="w")
         length = tk.StringVar(self.root, value="16")
         ttk.Spinbox(body, from_=8, to=128, textvariable=length, width=10).pack(anchor="w", pady=8)
