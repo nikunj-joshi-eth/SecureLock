@@ -1,13 +1,13 @@
 # SecureLock — Personal Digital Security Management System
 
-**Python PBL Project | Phase 2C credential vault management**
+**Python PBL Project | Phase 2D password security tools**
 
 The `securelock_app` package now supports encrypted vault setup, unlock and save.
 It uses Scrypt and AES-256-GCM through `cryptography`. See
 [`INTERFACES.md`](INTERFACES.md) for contracts, version-1 format and limitations,
 and [`ARCHITECTURE.md`](ARCHITECTURE.md) for the original architecture plan.
 Credential add, list, search, update and delete are implemented in memory.
-Password tools and Tkinter integration are still pending.
+Local password security tools are implemented; Tkinter integration is pending.
 The original `securelock.py` CLI is unchanged and still stores plaintext.
 
 ## Encrypted backend development
@@ -65,6 +65,34 @@ del session
 Credential operations do no file I/O. Discard session and record references on
 lock/exit; Python cannot guarantee secret memory erasure. No GUI or automatic
 saving is provided.
+
+## Password security tools
+
+Use `securelock_app.password_tools` with an unlocked vault:
+
+- `generate_password(length=16, use_symbols=True)` returns an 8–128 character
+  password using `secrets`, with uppercase, lowercase, digits and optionally
+  punctuation. Required categories occur in every result, with no fixed positions.
+- `estimate_strength(password)` returns `weak`, `moderate` or `strong`.
+- `find_duplicate_passwords(vault)` returns groups of credential IDs in first
+  occurrence order, comparing passwords exactly (including case and Unicode).
+- `security_statistics(vault)` returns `total`, `weak`, `moderate`, `strong` and
+  `reused`. Reused counts every record participating in a duplicate group.
+
+The strength rules apply in order: **weak** for fewer than 8 characters, fewer
+than two categories, a common substring, or an entire string made by repeating
+a 1–4 character unit at least twice; otherwise **strong** for at least 12
+characters and three categories; otherwise **moderate**. Empty strings are weak.
+Categories are Unicode lowercase, uppercase, digits and non-alphanumeric,
+non-whitespace symbols. Spaces count only toward length. Common substrings are
+`password`, `qwerty`, `letmein`, `welcome`, `admin`, `123456` and `abcdef`.
+Pattern checks use casefolded text; passwords are never modified.
+
+This explainable heuristic is an estimate, not a cryptographic guarantee. Its
+small pattern list is incomplete and can flag useful passphrases too. There is
+no external breach lookup. Tools only use memory: they do not modify vaults,
+log, print, save passwords or contact services. Callers must also keep returned
+passwords out of logs and plaintext files. See INTERFACES.md for exact contracts.
 
 ## Encrypted format and limitations
 
