@@ -1,12 +1,13 @@
 # SecureLock — Personal Digital Security Management System
 
-**Python PBL Project | Phase 2B encrypted backend**
+**Python PBL Project | Phase 2C credential vault management**
 
 The `securelock_app` package now supports encrypted vault setup, unlock and save.
 It uses Scrypt and AES-256-GCM through `cryptography`. See
 [`INTERFACES.md`](INTERFACES.md) for contracts, version-1 format and limitations,
 and [`ARCHITECTURE.md`](ARCHITECTURE.md) for the original architecture plan.
-Credential CRUD, password tools and Tkinter integration are still pending.
+Credential add, list, search, update and delete are implemented in memory.
+Password tools and Tkinter integration are still pending.
 The original `securelock.py` CLI is unchanged and still stores plaintext.
 
 ## Encrypted backend development
@@ -26,6 +27,46 @@ non-whitespace content; prefer a long, unique passphrase. The parent directory
 must exist. Setup refuses existing files even during a race. Saves atomically
 replace an encrypted file. Sessions and decrypted values belong in memory only.
 This backend is separate from the prototype; running the CLI does not use it.
+
+## Credential management
+
+Use the functions in `securelock_app.credentials` with an unlocked session's
+`vault`. Records have stable UUIDs. Updates replace all three login fields while
+preserving ID and insertion order. Search matches partial service names using
+case-insensitive Unicode comparison; blank queries are rejected. List and search
+return separate lists of immutable records. Invalid operations leave the vault
+unchanged; unknown update/delete IDs raise `KeyError`.
+
+Fictional example (the parent directory must exist):
+
+```python
+from pathlib import Path
+from securelock_app.authentication import create_vault, save_vault, unlock_vault
+from securelock_app.credentials import (
+    add_credential, list_credentials, search_credentials,
+    update_credential, delete_credential,
+)
+
+path = Path("data/fictional.vault")  # Must not already exist for setup.
+session = create_vault(path, "fictional master passphrase")
+record = add_credential(session.vault, "fictional.example", "fake-user", "fake-password")
+matches = search_credentials(session.vault, "FICTIONAL")
+record = update_credential(session.vault, record.id, "fictional.example",
+                           "new-fake-user", "new-fake-password")
+save_vault(path, session)  # Changes are saved only when explicitly requested.
+del session
+session = unlock_vault(path, "fictional master passphrase")
+records = list_credentials(session.vault)  # Contains plaintext passwords in memory.
+delete_credential(session.vault, record.id)
+save_vault(path, session)
+del session
+```
+
+Credential operations do no file I/O. Discard session and record references on
+lock/exit; Python cannot guarantee secret memory erasure. No GUI or automatic
+saving is provided.
+
+## Encrypted format and limitations
 
 Version 1 saves exactly version, base64 salt, nonce and ciphertext. It derives a
 32-byte key with Scrypt (`n=2**14, r=8, p=1`), uses a random 16-byte per-vault salt
