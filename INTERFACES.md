@@ -1,8 +1,8 @@
-# SecureLock shared interfaces — Phase 2C
+# SecureLock shared interfaces — Phase 2D
 
 Use Python 3.10 or newer and install `requirements.txt`. Models, authentication,
-cryptography, encrypted storage and credential CRUD are implemented. Password
-tools and GUI functions still raise `NotImplementedError`. The original
+cryptography, encrypted storage, credential CRUD and password tools are implemented.
+GUI functions still raise `NotImplementedError`. The original
 `securelock.py` remains a separate, insecure plaintext prototype. Imports do
 not prompt, open windows, access vault files or perform key derivation.
 
@@ -135,7 +135,7 @@ collisions are retried before appending. Lists returned by list/search are
 separate lists containing the immutable records. These functions perform no
 file I/O and do not import authentication or storage.
 
-## Password tools (`password_tools.py`, Mansi)
+## Password tools (`password_tools.py`, Mansi, implemented)
 
 | Signature | Output and behavior |
 | --- | --- |
@@ -144,9 +144,29 @@ file I/O and do not import authentication or storage.
 | `find_duplicate_passwords(vault: Vault) -> list[list[str]]` | Groups of at least two credential IDs with exactly equal passwords; groups and IDs follow first occurrence order |
 | `security_statistics(vault: Vault) -> dict[str, int]` | Keys `total`, `weak`, `moderate`, `strong`, `reused`; reused counts all records in duplicate groups; empty vault gives all zeros |
 
-Future errors: TypeError for wrong types (including bool as length), ValueError
-for length outside range or invalid vault. Strength thresholds must be agreed
-and documented when implemented; statistics must use that same estimator.
+Errors: TypeError for wrong types (including bool as length and non-bool
+use_symbols), ValueError for length outside range or invalid vault. Vaults are
+validated before reading. Generation uses `secrets.choice` on ASCII letters,
+digits and optionally `string.punctuation`; whole candidates missing a required
+category are rejected. This gives unbiased selection without fixed positions.
+
+Strength rules are applied in this order:
+
+1. **Weak** if length is below 8, fewer than two character categories occur,
+   a casefolded common substring occurs (`password`, `qwerty`, `letmein`,
+   `welcome`, `admin`, `123456`, `abcdef`), or the entire casefolded string
+   repeats a 1–4 character unit at least twice.
+2. **Strong** otherwise if length is at least 12 and at least three categories occur.
+3. **Moderate** otherwise.
+
+Categories are Unicode lowercase, uppercase, digits (`isdigit`), and symbols
+(non-alphanumeric, non-whitespace characters). Spaces count toward length only.
+Length means Python string length. Casefolding is used only for pattern checks;
+duplicate comparisons preserve case, spaces and Unicode representation exactly.
+This small heuristic is an educational estimate, not a cryptographic guarantee
+or a breach-database check. It misses patterns outside its explicit rules and
+may reject otherwise useful passphrases containing a listed substring.
+Statistics use this same estimator.
 Weak/moderate/strong counts sum to total; reused can overlap strength counts.
 Tools have no network, logging, or persistence side effects. Never return
 password values as duplicate-report keys.
@@ -176,7 +196,9 @@ validation, encrypted round trips, wrong passwords, metadata/ciphertext tamperin
 setup races, invalid sessions, failed writes, and salt/nonce generation.
 Credential tests cover validation without partial mutation, unique IDs, insertion
 order, Unicode case-insensitive search, and explicitly saved add/update/delete
-operations across encrypted reopenings. GUI and password tools remain pending.
+operations across encrypted reopenings. Password-tool tests cover generation,
+classification boundaries, patterns, exact duplicate groups, statistics,
+validation, no mutation and no output/logging/file access. GUI remains pending.
 
 ## Security limitations
 
