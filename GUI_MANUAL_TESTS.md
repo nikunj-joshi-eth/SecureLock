@@ -8,7 +8,9 @@ Final integration automated results are in [FINAL_TEST_REPORT.md](FINAL_TEST_REP
 This checklist remains pending manual execution after the integration changes,
 including descriptive-text wrapping when the window is resized.
 
-Start with `python main.py`. Check layout at 1180×800 and the 1020×760 minimum,
+Start with `python main.py`. Check layout at 1366×768, 1600×900 and 1920×1080
+(screen resolutions; allow for the taskbar and window chrome), the 1180×720 default
+and the 1000×680 minimum. At normal Windows scaling, check
 active navigation highlighting, dialog resizing, keyboard focus/Tab order, readable dark-theme text and visible error messages.
 
 | Check | Steps and expected result |
@@ -35,3 +37,22 @@ active navigation highlighting, dialog resizing, keyboard focus/Tab order, reada
 No manual checks above have been marked complete by the automated test suite.
 Inactivity auto-lock, multiple simultaneous writers, high-DPI scaling and
 platform-specific appearance need separate review before wider use.
+
+## Final visual polish pass (manual verification pending)
+
+- Check the fixed-width sidebar, equal navigation widths, active page, bottom lock
+  separation and comfortable text contrast on every page.
+- Dashboard: check equal two-column cards and wrapped recommendations; actions
+  should remain visible at the minimum size with each recommendation state.
+- Vault: check the shared search/filter toolbar, table selection, both scrollbars,
+  muted red Delete action, zero-result feedback and safe password-free columns.
+- Dialogs: check 560×620 default and 520×620 minimum, required-field focus,
+  strength colors, masked generation, Tab, Enter, Escape and right-aligned actions.
+- Generator: check both surface panels, length/symbol controls, long generated
+  values scrolling inside the entry, Show control and disabled Use action before
+  generation. Check that option labels remain readable.
+- Login and About: check panel backgrounds, exact academic details and all four
+  team rows. Check all controls fit with Windows display scaling at 100% and
+  125%; adjust the window within the available desktop area as needed.
+
+Automated tests do not establish visual appearance or mouse/keyboard usability.
