@@ -1,0 +1,2 @@
+# Application dependency planned for Scrypt and AES-256-GCM support.
+cryptography

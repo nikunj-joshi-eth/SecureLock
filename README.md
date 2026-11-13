@@ -2,6 +2,11 @@
 
 **Python PBL Project | Initial Command-Line Prototype**
 
+The modular application is in the planning stage. See
+[`ARCHITECTURE.md`](ARCHITECTURE.md) for the proposed module boundaries,
+security design, team responsibilities, and development phases. The planned
+security features are not implemented in the current prototype.
+
 ## Project team
 1. Nikunj Joshi — 25/SET/BCSE/137
 2. Khushi — 25/SET/BCSE/148
@@ -39,7 +44,10 @@ This version is an educational prototype, not a secure password manager. The mas
 - File handling and JSON data storage
 - Exception handling and input validation
 
-The later versions may add a Tkinter interface and suitable security libraries. NumPy, Pandas, visualization, and image processing will only be included if they serve a useful project purpose.
+The planned modular version uses Tkinter and the `cryptography` package. Install
+the planned dependency with `python -m pip install -r requirements.txt` when
+working on that version. NumPy, Pandas, visualization, and image processing
+will only be included if they serve a useful project purpose.
 
 ## Suggested manual tests
 1. Run the program for the first time and set a master password of at least eight characters.
