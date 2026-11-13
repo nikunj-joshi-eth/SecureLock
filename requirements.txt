@@ -1,2 +1,2 @@
-# Application dependency planned for Scrypt and AES-256-GCM support.
-cryptography
+# Maintained Scrypt and AES-256-GCM implementation.
+cryptography>=46.0.0
