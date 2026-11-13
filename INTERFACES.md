@@ -1,14 +1,10 @@
-# SecureLock shared interfaces — Phase 2A
+# SecureLock shared interfaces — Phase 2B
 
-Use Python 3.10 or newer. The foundation uses the standard library only;
-`cryptography` remains the planned security dependency. The original
-`securelock.py` is unchanged and separate from this package.
-
-Only the models and validation helpers are implemented. **Every feature
-function below currently raises `NotImplementedError` without side effects.**
-The return values and other errors below are contracts for later phases,
-not working security features. Imports must not open windows, prompt, access
-files, or perform cryptography.
+Use Python 3.10 or newer and install `requirements.txt`. Models, authentication,
+cryptography and encrypted storage are implemented. Credential CRUD, password
+tools and GUI functions still raise `NotImplementedError`. The original
+`securelock.py` remains a separate, insecure plaintext prototype. Imports do
+not prompt, open windows, access vault files or perform key derivation.
 
 ## Shared models (implemented)
 
@@ -39,11 +35,11 @@ never their values. Frozen records are updated by replacement, not mutation.
 `VaultSession(vault: Vault, key: bytes, salt: bytes)` carries an unlocked vault,
 32-byte key, and 16-byte salt in memory. It does not retain the master password.
 All fields are excluded from repr. This transport dataclass does not validate
-security parameters; future authentication must validate them. Never persist
+security parameters; authentication validates them before saving. Never persist
 a session or its key. On lock/exit, callers discard references; reliable memory
 erasure is not guaranteed in Python. No lock UI is implemented here.
 
-| Signature | Inputs and output | Future errors |
+| Signature | Inputs and output | Errors |
 | --- | --- | --- |
 | `create_vault(path: Path, master_password: str) -> VaultSession` | Validate password (at least 8 characters, not all whitespace), create salt/key, encrypt empty Vault, save and return session | FileExistsError if path exists; TypeError/ValueError for invalid input; OSError for I/O |
 | `unlock_vault(path: Path, master_password: str) -> VaultSession` | Read envelope, derive key, authenticate/decrypt, parse and validate Vault | FileNotFoundError/OSError; VaultFormatError for malformed data; DecryptionError for wrong password/tampering; TypeError/ValueError for invalid input |
@@ -58,7 +54,7 @@ authenticated decryption verifies the derived key.
 
 ## Cryptography (`crypto_utils.py`, Nikunj)
 
-| Signature | Inputs and output | Future errors |
+| Signature | Inputs and output | Errors |
 | --- | --- | --- |
 | `generate_salt() -> bytes` | Fresh cryptographically random 16-byte salt | OS randomness errors propagate |
 | `derive_key(master_password: str, salt: bytes) -> bytes` | UTF-8 password and 16-byte salt to 32-byte Scrypt key | TypeError for wrong types; ValueError for blank password/invalid salt length |
@@ -66,27 +62,56 @@ authenticated decryption verifies the derived key.
 | `decrypt(ciphertext: bytes, key: bytes, nonce: bytes) -> bytes` | Authenticate ciphertext using 32-byte key and 12-byte nonce, return plaintext only on success | TypeError/ValueError for invalid parameters; DecryptionError for authentication failure |
 
 `DecryptionError` subclasses ValueError. Empty plaintext is permitted. No custom
-cryptographic algorithms or fallback plaintext behavior. Before Phase 3 writes
-files, document a fixed format-version-to-Scrypt-parameters mapping and the
-authenticated-data policy; all writers/readers must use the same mapping.
+cryptographic algorithms or fallback plaintext behavior. Version 1 always uses Scrypt `n=2**14, r=8, p=1, length=32`, a fresh random
+16-byte salt per vault, and AES-256-GCM with a fresh random 12-byte nonce per
+write and a full 16-byte authentication tag. Passwords are UTF-8 encoded without
+normalization; invalid Unicode is rejected without echoing the password.
+
+Both crypto helpers always use the exact AAD bytes
+`b"SecureLock:vault:version=1"`. Their signatures are unchanged. This binds the
+application format and version to the ciphertext. Storage rejects any version
+other than integer 1 (including booleans). Salt changes alter the derived key;
+nonce changes fail GCM authentication. Future versions must select their own
+KDF settings and AAD, never silently change the version-1 mapping.
+
+Scrypt's main working memory is about `128*n*r = 16 MiB`. Five real derivations
+averaged approximately 31 ms on the development machine (Python 3.14,
+cryptography 50.0.2). This validates interactive feasibility, not resistance to
+modern password cracking. These are conservative educational settings; use a
+long, unique master passphrase. Stronger costs require a new format version and
+benchmarking on target machines. See the maintained package's
+[Scrypt documentation](https://cryptography.io/en/stable/hazmat/primitives/key-derivation-functions/#scrypt)
+and [AES-GCM documentation](https://cryptography.io/en/stable/hazmat/primitives/aead/).
 
 ## Storage (`storage.py`, Khushi with Nikunj)
 
 `EncryptedEnvelope(version: int, salt: bytes, nonce: bytes, ciphertext: bytes)`
 is a frozen transport dataclass without constructor validation. Ciphertext is
-excluded from repr. Future storage validates version (initially integer 1),
+excluded from repr. Storage validates version (initially integer 1),
 16-byte salt, 12-byte nonce, and ciphertext with an authentication tag.
 It contains no credential fields, key, or master password.
 
-| Signature | Inputs and output | Future errors |
+| Signature | Inputs and output | Errors |
 | --- | --- | --- |
 | `read_envelope(path: Path) -> EncryptedEnvelope` | Read JSON envelope and decode binary fields from base64; no decryption | FileNotFoundError/OSError; VaultFormatError for invalid JSON, fields, base64, lengths, or unsupported version; TypeError for wrong input type |
-| `write_envelope(path: Path, envelope: EncryptedEnvelope) -> None` | Validate envelope, encode bytes as base64, atomically replace encrypted file | VaultFormatError for invalid envelope; TypeError for wrong input types; OSError for I/O |
+| `write_envelope(path: Path, envelope: EncryptedEnvelope, *, overwrite: bool = True) -> None` | Validate envelope, encode bytes as base64, atomically replace encrypted file; overwrite=False exclusively publishes a new file | VaultFormatError for invalid envelope; TypeError for wrong input types; OSError for I/O |
 
 `VaultFormatError` subclasses ValueError and also covers malformed decrypted
 vault structures. JSON envelope keys will be `version`, `salt`, `nonce`,
 `ciphertext`; decrypted payload will be `{"credentials": [...]}` with each
 record containing exactly `id`, `website`, `username`, `password`.
+Envelope parsing rejects duplicate, missing and extra keys, invalid UTF-8,
+invalid base64, unsupported versions and wrong binary lengths before Scrypt.
+Reads and writes are capped at 16 MiB of serialized envelope data.
+
+The optional `overwrite` keyword is the storage signature extension for safe
+setup. Writes stage only encrypted bytes in a same-directory temporary file,
+flush and fsync it, then use atomic replacement for saves or `os.link` for
+exclusive setup publication. An existing destination, including a racing writer,
+is never overwritten by setup. Filesystems without hard-link support fail closed.
+Temporary files are cleaned after normal errors; abrupt process termination may
+leave encrypted staging files. The parent directory must already exist.
+
 Authentication coordinates in-memory serialization/model construction; storage
 only handles the encrypted envelope. No plaintext file helpers are provided.
 
@@ -142,6 +167,20 @@ python -m compileall -q securelock_app tests
 python -m unittest discover -s tests -v
 ```
 
-Tests use fictional in-memory data only. Security algorithms, storage, and GUI
-tests belong to their implementation phases; passing foundation tests does not
-mean the application can safely store passwords.
+Tests use temporary directories and fictional credentials. They cover model
+validation, encrypted round trips, wrong passwords, metadata/ciphertext tampering,
+setup races, invalid sessions, failed writes, and salt/nonce generation. GUI,
+credential CRUD and password tools remain outside this phase.
+
+## Security limitations
+
+This is an educational backend, not an independently audited password manager.
+Python cannot guarantee erasure of passwords, plaintext or keys from memory;
+OS swap, crash dumps and malware can expose them. Do not log session/vault data
+or exception tracebacks with locals. There is no password reset or recovery
+bypass. Lost passwords or damaged vaults require a previously saved usable
+backup. AES-GCM does not detect rollback to an older valid encrypted file.
+Concurrent saves use last-writer-wins replacement; there is no multi-process
+locking. File fsync does not guarantee directory metadata durability after power
+loss. Filesystem permissions/ACLs and backups remain the user's responsibility.
+No plaintext prototype migration or launcher integration is provided.
