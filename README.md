@@ -1,14 +1,56 @@
 # SecureLock — Personal Digital Security Management System
 
-**Python PBL Project | Phase 2D password security tools**
+**Python PBL Project | Phase 2E Tkinter desktop application**
 
 The `securelock_app` package now supports encrypted vault setup, unlock and save.
 It uses Scrypt and AES-256-GCM through `cryptography`. See
 [`INTERFACES.md`](INTERFACES.md) for contracts, version-1 format and limitations,
 and [`ARCHITECTURE.md`](ARCHITECTURE.md) for the original architecture plan.
 Credential add, list, search, update and delete are implemented in memory.
-Local password security tools are implemented; Tkinter integration is pending.
+Local password security tools and the Tkinter desktop application are implemented.
 The original `securelock.py` CLI is unchanged and still stores plaintext.
+
+## Launch the desktop application
+
+Install Python 3.10+ with Tkinter, then run from the project directory:
+
+```text
+python -m pip install -r requirements.txt
+python main.py
+```
+
+Tkinter is included with the standard Windows Python installer. On Linux, your
+distribution may require its Python Tk package. No additional GUI library is used.
+The application opens a dark desktop window with Dashboard, Credential Vault
+and Password Generator navigation.
+
+On first launch, create and confirm a master password of at least 8 characters.
+Later launches ask you to unlock the existing vault. Three failed authenticated
+unlock attempts disable sign-in until you close and restart the application.
+This is a per-session UI limit, not protection against offline password guessing.
+Malformed or inaccessible vaults produce safe errors; existing files are never
+silently replaced during setup.
+
+The encrypted vault is `data/securelock.vault`, relative to the project directory
+even when launched from elsewhere. This directory is ignored by Git. Keep an
+encrypted backup and remember your master password: there is no recovery bypass.
+No prototype data is imported automatically.
+
+Use the vault table to search services, add, edit or delete credentials. Passwords
+are absent from the table; Reveal / Hide displays only the selected password.
+Delete requires confirmation. Each successful change is saved immediately through
+the encrypted backend. A failed save reports an error and restores the previous
+in-memory records; the form remains available for retry. Dashboard counts refresh
+whenever you open it after a change.
+
+The generator supports lengths 8–128 and optional symbols. Results start hidden;
+Show reveals them, and Use in Add Credential fills a masked add form. Nothing is
+automatically copied to the clipboard. Lock Vault clears secret fields, closes
+credential dialogs and drops the unlocked session. Navigation clears revealed
+and generated passwords too. There is no inactivity timer: lock explicitly when
+leaving the computer. Python cannot guarantee erasure of secrets from memory.
+
+See [GUI_MANUAL_TESTS.md](GUI_MANUAL_TESTS.md) for the desktop verification checklist.
 
 ## Encrypted backend development
 
@@ -26,7 +68,7 @@ master_password)` and `save_vault(Path(...), session)` from
 non-whitespace content; prefer a long, unique passphrase. The parent directory
 must exist. Setup refuses existing files even during a race. Saves atomically
 replace an encrypted file. Sessions and decrypted values belong in memory only.
-This backend is separate from the prototype; running the CLI does not use it.
+The new GUI uses this backend; the original CLI does not.
 
 ## Credential management
 
@@ -63,8 +105,8 @@ del session
 ```
 
 Credential operations do no file I/O. Discard session and record references on
-lock/exit; Python cannot guarantee secret memory erasure. No GUI or automatic
-saving is provided.
+lock/exit; Python cannot guarantee secret memory erasure. Direct backend callers
+must save explicitly; the GUI saves after each credential change.
 
 ## Password security tools
 
@@ -147,7 +189,7 @@ This version is an educational prototype, not a secure password manager. The mas
 - File handling and JSON data storage
 - Exception handling and input validation
 
-The modular backend uses `cryptography`; Tkinter integration is pending. Install
+The modular backend uses `cryptography`; the desktop GUI uses Tkinter/ttk. Install
 the dependency with `python -m pip install -r requirements.txt` when
 working on that version. NumPy, Pandas, visualization, and image processing
 will only be included if they serve a useful project purpose.

@@ -1,1 +1,1 @@
-"""Future Tkinter interface; importing this package creates no windows."""
+"""Tkinter desktop interface; importing this package creates no windows."""
