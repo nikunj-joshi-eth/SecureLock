@@ -4,7 +4,9 @@
 
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Interface CustomTkinter](https://img.shields.io/badge/Interface-CustomTkinter-334155)
-![Status Development Build](https://img.shields.io/badge/Status-Development%20Build-orange)
+![Release v1.0.0](https://img.shields.io/badge/Release-v1.0.0-64748b)
+![Latest GUI CustomTkinter](https://img.shields.io/badge/GUI-CustomTkinter-4F8FF7)
+![Tests](https://img.shields.io/badge/GUI%20branch%20tests-76%20passed-238636)
 
 A Python desktop application for managing personal login credentials in a local encrypted vault, generating passwords, and reviewing password strength and reuse. Developed as a second-year B.Tech Python Programming PBL project.
 
@@ -59,6 +61,8 @@ Genuine CustomTkinter application captures at 1180×700, using only fictional da
 | Credential Vault | [Vault and fixed actions](docs/screenshots/vault.png) |
 | Password Generator | [Generator controls](docs/screenshots/generator.png) |
 
+These are genuine captures from the fictional demo vault. [About & Credits](docs/screenshots/) will be captured separately before final academic submission.
+
 See [verification results](FINAL_TEST_REPORT.md) and the pending
 [manual acceptance checklist](GUI_MANUAL_TESTS.md). Full high-DPI acceptance
 remains pending.
@@ -93,7 +97,7 @@ See [architecture](ARCHITECTURE.md), [interface contracts](INTERFACES.md), [deve
 | Nikunj Joshi | 25/SET/BCSE/137 | Authentication, encryption coordination and integration |
 | Khushi | 25/SET/BCSE/148 | Credential management and storage integration |
 | Mansi | 25/SET/BCSE/131 | Password tools and security statistics |
-| Sumit Kumar | 25/SET/BCSE/145 | Tkinter GUI and interaction |
+| Sumit Kumar | 25/SET/BCSE/145 | Desktop GUI and interaction |
 
 These are planned roles, not verified individual authorship. See [CONTRIBUTIONS.md](CONTRIBUTIONS.md); commits and reviewed PRs provide contribution evidence.
 
@@ -105,7 +109,7 @@ python -m compileall -q securelock_app tests
 python -m pip check
 ```
 
-Tests cover setup/reopening, wrong passwords, tampering, malformed vaults, encrypted CRUD persistence, failed-save rollback, password constraints, statistics and display-free GUI coordination. They do not establish visual usability. See [actual final test results](FINAL_TEST_REPORT.md) and the [manual desktop checklist](GUI_MANUAL_TESTS.md). `TEST_CASES.md` refers to the legacy CLI.
+Tests cover setup/reopening, wrong passwords, tampering, malformed vaults, encrypted CRUD persistence, failed-save rollback, password constraints, statistics and display-free GUI coordination. They do not establish complete visual usability; real-widget tests and limited rendered UI checks are documented separately. See [actual final test results](FINAL_TEST_REPORT.md) and the [manual desktop checklist](GUI_MANUAL_TESTS.md). `TEST_CASES.md` refers to the legacy CLI.
 
 ## Security limitations
 
@@ -142,3 +146,10 @@ The final academic report and presentation will be prepared only after the colle
 - [Windows test workflow](.github/workflows/tests.yml) — executes automated tests on supported Python versions for pushes and pull requests. Its successful execution must be verified in the **Actions** tab; file presence is not proof that CI passed.
 
 **Repository status:** The GitHub repository is private. A published release does not automatically change visibility. There is no prebuilt Windows installer, no genuine screenshot gallery yet, and no independently validated security certification.
+
+## Versions and public demonstration
+
+- [v1.0.0](https://github.com/nikunj-joshi-eth/SecureLock/releases/tag/v1.0.0) is the historical first desktop release (published 13 November 2026).
+- The modern **CustomTkinter interface** was merged in [PR #21](https://github.com/nikunj-joshi-eth/SecureLock/pull/21). Its [Windows GitHub Actions run](https://github.com/nikunj-joshi-eth/SecureLock/actions/runs/44311858715) succeeded.
+- **v1.1.0 is the next proposed release**, not yet published. See [release notes](RELEASE_NOTES.md) and [publication checklist](RELEASING.md).
+- Only use fictional credentials for demonstrations. The repository contains an intentionally insecure, clearly labelled legacy CLI prototype; launch the encrypted desktop program with `python main.py`.
