@@ -1,6 +1,6 @@
 # Release checklist — SecureLock
 
-This is a repeatable checklist for the **first GitHub release**. Do not publish a final `v1.0.0` release until the checks below have actually been completed.
+This is a repeatable checklist for the **next GitHub release**. Do not publish a final `v1.1.0` release until the checks below have actually been completed.
 
 ## Acceptance gates
 
@@ -17,7 +17,7 @@ This is a repeatable checklist for the **first GitHub release**. Do not publish 
 
 ## Publish on GitHub
 
-When the checks pass: open the repository **Releases → Draft a new release**, create tag `v1.0.0` targeting `main`, set title `SecureLock v1.0.0 — Python PBL Desktop Application`, and use a concise summary of implemented features, installation requirements and security limitations from `RELEASE_NOTES.md`. Do not mark it as an audited security product.
+When the checks pass: open the repository **Releases → Draft a new release**, create tag `v1.1.0` targeting `main`, set title `SecureLock v1.1.0 — Python PBL Desktop Application`, and use a concise summary of implemented features, installation requirements and security limitations from `RELEASE_NOTES.md`. Do not mark it as an audited security product.
 
 **Important:** A GitHub source archive is not a prebuilt Windows installer. No Windows `.exe` or installer is provided unless one is built and tested separately.
 
@@ -25,4 +25,4 @@ When the checks pass: open the repository **Releases → Draft a new release**, 
 
 Verify the release page exists, the tag points to the intended commit, source archives are accessible to authorized repository users, and the release notes accurately match the tagged code.
 
-Repository visibility is currently private; publishing a release does not automatically make it public.
+Repository visibility is currently private. To make this repository public, the account owner must change visibility separately in Settings → General → Danger Zone, after checking commit history for secrets. Publishing a release does not change visibility.
