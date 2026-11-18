@@ -1,2 +1,5 @@
 # Maintained Scrypt and AES-256-GCM implementation.
 cryptography>=46.0.0
+
+# Rounded desktop widgets and scrolling containers.
+customtkinter>=6.0.0,<7

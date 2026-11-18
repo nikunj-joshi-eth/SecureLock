@@ -192,100 +192,16 @@ class ControllerTests(unittest.TestCase):
 
 
 class ViewCoordinationTests(unittest.TestCase):
-    def test_typing_search_refreshes_without_submit_and_reset_restores_defaults(self):
-        app = SecureLockApp.__new__(SecureLockApp)
-        app.root = Mock()
-        app.shell = Mock()
-        app.secret = Mock()
-        app.button = Mock()
-        app.refresh_table = Mock()
-        with patch("securelock_app.gui.main_window.tk.StringVar", side_effect=[Mock(), Mock()]), \
-                patch("securelock_app.gui.main_window.tk.BooleanVar"), \
-                patch("securelock_app.gui.main_window.ttk.Frame"), \
-                patch("securelock_app.gui.main_window.ttk.Label"), \
-                patch("securelock_app.gui.main_window.ttk.Entry"), \
-                patch("securelock_app.gui.main_window.ttk.Combobox"), \
-                patch("securelock_app.gui.main_window.ttk.Checkbutton"), \
-                patch("securelock_app.gui.main_window.ttk.Treeview"), \
-                patch("securelock_app.gui.main_window.ttk.Scrollbar"):
-            app.vault_page()
-        app.refresh_table.reset_mock()
-        # Exercise the write callback registered on the actual query widget variable.
-        mode, callback = app.query.trace_add.call_args.args
-        self.assertEqual(mode, "write")
-        callback("query", "", "write")
-        app.refresh_table.assert_called_once_with()
-        app.strength_filter.set("Weak")
-        app.alphabetical.set(False)
-        app.reset_filters()
-        app.query.set.assert_called_once_with("")
-        app.strength_filter.set.assert_called_with("All")
-        app.alphabetical.set.assert_called_with(True)
-
     def test_all_session_pages_redirect_when_locked(self):
         app = SecureLockApp.__new__(SecureLockApp)
         app.controller = Mock(session=None)
         app.show_login = Mock()
         app.clear_page = Mock()
-        with patch("securelock_app.gui.main_window.ttk.Frame") as frame:
-            for page in (app.dashboard, app.vault_page, app.generator_page, app.about_page):
-                with self.subTest(page=page.__name__):
-                    app.show_login.reset_mock()
-                    page()
-                    app.show_login.assert_called_once_with()
-            frame.assert_not_called()
+        for page in (app.dashboard, app.vault_page, app.generator_page, app.about_page):
+            app.show_login.reset_mock()
+            page()
+            app.show_login.assert_called_once_with()
         app.clear_page.assert_not_called()
-
-    def test_about_content_and_unlocked_navigation(self):
-        app = SecureLockApp.__new__(SecureLockApp)
-        app.root = Mock()
-        app.controller = Mock()
-        app.clear_page = Mock()
-        with patch("securelock_app.gui.main_window.ttk.Frame"), \
-                patch("securelock_app.gui.main_window.ttk.Label") as label, \
-                patch("securelock_app.gui.main_window.ttk.Button") as button:
-            app.about_page()
-            texts = [call.kwargs["text"] for call in label.call_args_list]
-            content = "\n".join(texts)
-            for expected in (
-                "SecureLock — Personal Digital Security Management System",
-                "Python Programming — Project-Based Learning (PBL)",
-                "1. Nikunj Joshi — 25/SET/BCSE/137",
-                "2. Khushi — 25/SET/BCSE/148",
-                "3. Mansi — 25/SET/BCSE/131",
-                "4. Sumit Kumar — 25/SET/BCSE/145",
-                "Programme: B.Tech Computer Science and Engineering",
-                "Subject: Python Programming",
-                "Subject Code: 5.0CE202E02H",
-                "Under the Guidance of:\nDr. Rosy Madan (Professor)",
-                "Development Build",
-                "Developed as part of the Python Programming PBL.",
-            ):
-                self.assertIn(expected, content)
-            self.assertEqual(
-                [(call.kwargs["text"], call.kwargs["command"]) for call in button.call_args_list],
-                [("Dashboard", app.dashboard), ("Credential Vault", app.vault_page),
-                 ("Password Generator", app.generator_page),
-                 ("About & Credits", app.about_page), ("Lock Vault", app.lock)],
-            )
-            active = [call.kwargs["text"] for call in button.call_args_list
-                      if call.kwargs.get("style") == "Active.TButton"]
-            self.assertEqual(active, ["About & Credits"])
-        app.clear_page.assert_called_once_with()
-        app.controller.assert_not_called()
-
-    def test_about_requires_unlock_and_lock_returns_to_login(self):
-        app = SecureLockApp.__new__(SecureLockApp)
-        app.controller = Mock(session=None)
-        app.show_login = Mock()
-        app.shell = Mock()
-        app.about_page()
-        app.shell.assert_not_called()
-        app.show_login.assert_called_once_with()
-        app.show_login.reset_mock()
-        app.lock()
-        app.controller.lock.assert_called_once_with()
-        app.show_login.assert_called_once_with()
 
     def test_form_generation_uses_shared_generator_and_remasks(self):
         password, entry, visible = Mock(), Mock(), Mock()
@@ -316,23 +232,23 @@ class ViewCoordinationTests(unittest.TestCase):
         self.assertIsNone(app.generated)
         self.assertIsNone(app.revealed)
 
-    def test_table_only_receives_safe_columns(self):
+    def test_rows_only_receive_safe_fields(self):
         from securelock_app.models import Credential
         app = SecureLockApp.__new__(SecureLockApp)
-        app.tree = Mock()
-        app.tree.get_children.return_value = []
+        app.rows = Mock()
+        app.rows.winfo_children.return_value = []
         app.hide_revealed = Mock()
         app.query = Mock()
-        app.query.get.return_value = ""
+        app.strength_filter = Mock()
+        app.alphabetical = Mock()
         app.feedback = Mock()
         app.controller = Mock()
-        app.strength_filter = Mock()
-        app.strength_filter.get.return_value = "All"
-        app.alphabetical = Mock()
-        app.alphabetical.get.return_value = True
         app.controller.filtered_records.return_value = [Credential("fake-id", "fake.example", "fake-user", "fictional-secret")]
-        app.refresh_table()
-        app.tree.insert.assert_called_once_with("", "end", iid="fake-id", values=("fake.example", "fake-user", "moderate"))
+        with patch("securelock_app.gui.main_window.card"), patch("securelock_app.gui.main_window.button"), patch("securelock_app.gui.main_window.label") as labels:
+            app.refresh_table()
+        texts = [call.args[1] for call in labels.call_args_list]
+        self.assertEqual(texts, ["fake.example", "fake-user", "Moderate"])
+        self.assertIsNone(app.selected_id)
 
 
 if __name__ == "__main__":

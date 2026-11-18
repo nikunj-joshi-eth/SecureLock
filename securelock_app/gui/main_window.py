@@ -1,106 +1,32 @@
-"""Tkinter desktop UI. Importing this module never opens a window."""
+"""CustomTkinter desktop views; all vault operations stay in VaultController."""
 
 from pathlib import Path
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox
+import customtkinter as ctk
 
 from .controller import AppError, VaultController
+from .components import (BACKGROUND, SIDEBAR, PANEL, ELEVATED, ACCENT, TEXT,
+                         MUTED, SUCCESS, WARNING, ERROR, label, button, entry, card, section)
 from ..password_tools import estimate_strength, generate_password
 
-
-# Shared visual tokens; security and persistence live in the controller.
-BACKGROUND = "#141c29"
-SIDEBAR = "#1b2636"
-PANEL = "#233044"
-BORDER = "#39485c"
-ACCENT = "#3d70ad"
-ACTIVE = "#2c4c72"
-HOVER = "#35465c"
-ACCENT_HOVER = "#4b7eb8"
-DISABLED = "#252e3b"
-DISABLED_TEXT = "#718096"
-DANGER = "#49323b"
-DANGER_HOVER = "#62404a"
-TEXT = "#e8edf4"
-MUTED = "#a4b2c5"
-SUCCESS = "#94bda6"
-ERROR = "#d99b9b"
-FONT = "Segoe UI"
-SPACE = 8
-PAGE_PAD = SPACE * 3
 DEFAULT_VAULT = Path(__file__).resolve().parents[2] / "data" / "securelock.vault"
 
 
 class SecureLockApp:
-    """One root window; navigation destroys the previous page's secret widgets."""
+    """One root and a few page builders. Navigation clears secret variables."""
 
     def __init__(self, root, controller):
-        self.root = root
-        self.controller = controller
+        self.root, self.controller = root, controller
         self.secret_variables = []
         self.dialog = None
         root.title("SecureLock • Personal Security")
-        root.geometry("1180x720")
-        root.minsize(1000, 680)
-        root.configure(background=BACKGROUND)
+        root.geometry("1180x700")
+        root.minsize(1000, 620)
+        root.configure(fg_color=BACKGROUND)
         root.protocol("WM_DELETE_WINDOW", self.close)
-        # Avoid Tk's default terminal tracebacks with unlocked data in scope.
         root.report_callback_exception = self.callback_error
-        self.style()
         self.show_login()
-
-    def style(self):
-        style = ttk.Style(self.root)
-        style.theme_use("clam")
-        style.configure(".", background=BACKGROUND, foreground=TEXT, font=(FONT, 10))
-        style.configure("TFrame", background=BACKGROUND)
-        style.configure("Panel.TFrame", background=PANEL)
-        style.configure("Sidebar.TFrame", background=SIDEBAR)
-        style.configure("Sidebar.TLabel", background=SIDEBAR, foreground=MUTED,
-                        font=(FONT, 9))
-        style.configure("Danger.TButton", background=DANGER, foreground=ERROR)
-        style.map("Danger.TButton", background=[("active", DANGER_HOVER)])
-        style.configure("TSeparator", background=BORDER)
-        style.configure("TLabel", padding=(0, 4))
-        style.configure("Muted.TLabel", foreground=MUTED)
-        style.configure("Title.TLabel", font=(FONT, 24, "bold"))
-        style.configure("Heading.TLabel", font=(FONT, 16, "bold"))
-        style.configure("Panel.TLabel", background=PANEL)
-        style.configure("Number.TLabel", font=(FONT, 28, "bold"), foreground=TEXT, background=PANEL)
-        style.configure("TButton", background=PANEL, padding=(16, 10), borderwidth=0)
-        style.map("TButton", background=[("disabled", DISABLED), ("active", HOVER)],
-                  foreground=[("disabled", DISABLED_TEXT)])
-        style.configure("Active.TButton", background=ACTIVE, foreground=TEXT, anchor="w")
-        style.configure("Nav.TButton", background=SIDEBAR, anchor="w", padding=(14, 12))
-        style.configure("Active.TButton", padding=(14, 12))
-        style.map("Active.TButton", background=[("active", ACTIVE)])
-        style.configure("Brand.TLabel", background=SIDEBAR, foreground=TEXT,
-                        font=(FONT, 18, "bold"))
-        style.configure("Caption.TLabel", background=PANEL, foreground=MUTED,
-                        font=(FONT, 10))
-        style.configure("TCombobox", fieldbackground=PANEL, foreground=TEXT, padding=8)
-        style.map("TCombobox", fieldbackground=[("readonly", PANEL)], foreground=[("readonly", TEXT)])
-        style.configure("Accent.TButton", background=ACCENT)
-        style.map("Accent.TButton", background=[("disabled", DISABLED), ("active", ACCENT_HOVER)])
-        style.configure("TEntry", fieldbackground=PANEL, foreground=TEXT, insertcolor=TEXT,
-                        padding=9, bordercolor=BORDER, lightcolor=BORDER, darkcolor=BORDER)
-        style.map("TEntry", bordercolor=[("focus", ACCENT)])
-        style.map("TEntry", fieldbackground=[("readonly", PANEL)], foreground=[("readonly", TEXT)])
-        style.configure("TSpinbox", fieldbackground=PANEL, foreground=TEXT,
-                        insertcolor=TEXT, padding=8, arrowcolor=TEXT)
-        style.configure("TCheckbutton", padding=8)
-        style.map("TCheckbutton", background=[("active", BACKGROUND)])
-        style.configure("Panel.TCheckbutton", background=PANEL)
-        style.map("Panel.TCheckbutton", background=[("active", PANEL)])
-        self.root.option_add("*TCombobox*Listbox.background", PANEL)
-        self.root.option_add("*TCombobox*Listbox.foreground", TEXT)
-        self.root.option_add("*TCombobox*Listbox.selectBackground", ACTIVE)
-        self.root.option_add("*TCombobox*Listbox.selectForeground", TEXT)
-        style.configure("Treeview", background=PANEL, fieldbackground=PANEL,
-                        foreground=TEXT, rowheight=38, borderwidth=0)
-        style.configure("Treeview.Heading", background=SIDEBAR, foreground=TEXT,
-                        padding=10, font=(FONT, 11, "bold"))
-        style.map("Treeview", background=[("selected", ACTIVE)], foreground=[("selected", TEXT)])
 
     def callback_error(self, *_):
         self.lock()
@@ -120,41 +46,49 @@ class SecureLockApp:
             self.dialog = None
         for child in self.root.winfo_children():
             child.destroy()
-        self.revealed = None
-        self.generated = None
-        self.tree = None
+        self.generated = self.revealed = None
+        self.selected_id = None
+        self.row_buttons = {}
 
     def button(self, parent, text, command, accent=False, danger=False):
-        button = ttk.Button(parent, text=text, command=command,
-                            style="Danger.TButton" if danger else ("Accent.TButton" if accent else "TButton"))
-        button.pack(side="left", padx=(0, 10), pady=8)
-        return button
+        widget = button(parent, text, command, accent, danger)
+        widget.pack(side="left", padx=(0, 8), pady=8)
+        return widget
 
     def show_login(self):
         self.clear_page()
-        card = ttk.Frame(self.root, padding=32, style="Panel.TFrame")
-        card.place(relx=.5, rely=.5, anchor="center", width=520)
-        ttk.Label(card, text="SecureLock", style="Panel.TLabel", font=(FONT, 24, "bold")).pack(anchor="w")
+        # A scrolling outer surface also supports small desktop work areas.
+        surface = ctk.CTkScrollableFrame(self.root, fg_color=BACKGROUND, corner_radius=0)
+        surface.pack(fill="both", expand=True)
+        surface.grid_columnconfigure(0, weight=1)
+        label(surface, "SECURELOCK  /  PERSONAL SECURITY", size=12, color=MUTED).grid(row=0, column=0, pady=(35, 22))
+        panel = card(surface)
+        panel.grid(row=1, column=0, pady=(0, 24))
+        panel.grid_columnconfigure(0, minsize=440)
+        form = ctk.CTkFrame(panel, fg_color="transparent")
+        form.grid(row=0, column=0, padx=32, pady=28, sticky="ew")
+        label(form, "S", size=26, bold=True, fg_color=ACCENT, corner_radius=12, width=48, height=48).pack(anchor="w")
         try:
             setup = not self.controller.vault_exists()
         except AppError as error:
-            ttk.Label(card, text=str(error), style="Panel.TLabel", foreground=ERROR, wraplength=420).pack(pady=20)
-            ttk.Button(card, text="Retry", command=self.show_login).pack(anchor="w")
+            label(form, str(error), color=ERROR, wraplength=370).pack(pady=20)
+            button(form, "Retry", self.show_login).pack()
             return
-        ttk.Label(card, text="Create your encrypted vault" if setup else "Welcome back. Unlock your vault.",
-                  style="Panel.TLabel", font=(FONT, 14, "bold")).pack(anchor="w", pady=(8, 20))
-        password = self.secret()
-        confirmation = self.secret()
-        ttk.Label(card, text="Master password", style="Panel.TLabel").pack(anchor="w")
-        entry = ttk.Entry(card, textvariable=password, show="•")
-        entry.pack(fill="x", pady=(0, 12))
+        label(form, "Your security starts here." if setup else "Welcome back.", size=28, bold=True).pack(anchor="w", pady=(20, 4))
+        label(form, "Create a local encrypted vault." if setup else "Enter your master password to unlock your vault.", color=MUTED, wraplength=370).pack(anchor="w", pady=(0, 20))
+        password, confirmation = self.secret(), self.secret()
+        label(form, "Master password").pack(anchor="w")
+        password_entry = entry(form, textvariable=password, show="•")
+        password_entry.pack(fill="x", pady=(4, 12))
+        fields = [password_entry]
         if setup:
-            ttk.Label(card, text="Confirm master password", style="Panel.TLabel").pack(anchor="w")
-            ttk.Entry(card, textvariable=confirmation, show="•").pack(fill="x")
-            ttk.Label(card, text="At least 8 characters. Prefer a long, unique passphrase.",
-                      style="Caption.TLabel", wraplength=420).pack(anchor="w", pady=10)
-        feedback = ttk.Label(card, text="", style="Panel.TLabel", wraplength=420, foreground=ERROR)
-        feedback.pack(fill="x", pady=10)
+            label(form, "Confirm master password").pack(anchor="w")
+            confirm = entry(form, textvariable=confirmation, show="•")
+            confirm.pack(fill="x", pady=(4, 8))
+            fields.append(confirm)
+            label(form, "Use 8+ characters. A long, unique passphrase is best.", color=MUTED, wraplength=370).pack(anchor="w")
+        feedback = label(form, "", color=ERROR, wraplength=370)
+        feedback.pack(fill="x", pady=8)
 
         def submit():
             try:
@@ -165,169 +99,135 @@ class SecureLockApp:
             except AppError as error:
                 feedback.configure(text=str(error))
                 if self.controller.failed_attempts >= 3:
-                    action.state(["disabled"])
-                    entry.state(["disabled"])
+                    action.configure(state="disabled")
+                    password_entry.configure(state="disabled")
             else:
                 self.dashboard()
             finally:
                 password.set("")
                 confirmation.set("")
 
-        action = ttk.Button(card, text="Create vault" if setup else "Unlock vault",
-                            style="Accent.TButton", command=submit)
-        action.pack(fill="x", pady=8)
-        for child in card.winfo_children():
-            if isinstance(child, ttk.Entry):
-                child.bind("<Return>", lambda event: submit())
-        ttk.Label(card, text="Local encrypted storage • No cloud account",
-                  style="Caption.TLabel").pack(pady=(20, 0))
-        entry.focus_set()
+        action = button(form, "Create vault  →" if setup else "Unlock vault  →", submit, accent=True)
+        action.pack(fill="x", pady=(0, 14))
+        label(form, "LOCAL STORAGE  •  AES-256-GCM ENCRYPTION", size=11, color=MUTED).pack()
+        for field in fields:
+            field.bind("<Return>", lambda event: submit())
+        password_entry.focus_set()
 
     def shell(self, title, subtitle):
         if self.controller.session is None:
             self.show_login()
             return None
         self.clear_page()
-        sidebar = ttk.Frame(self.root, padding=(18, 24), width=232, style="Sidebar.TFrame")
+        sidebar = ctk.CTkFrame(self.root, width=220, corner_radius=0, fg_color=SIDEBAR)
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
-        ttk.Label(sidebar, text="SecureLock", style="Brand.TLabel").pack(anchor="w", pady=(6, 0))
-        ttk.Label(sidebar, text="PERSONAL SECURITY", style="Sidebar.TLabel").pack(anchor="w", pady=(0, 28))
-        for text, command in (("Dashboard", self.dashboard), ("Credential Vault", self.vault_page),
-                              ("Password Generator", self.generator_page),
-                              ("About & Credits", self.about_page)):
-            ttk.Button(sidebar, text=text, command=command,
-                       style="Active.TButton" if (text == title or
-                       (text == "Dashboard" and title == "Welcome to SecureLock"))
-                       else "Nav.TButton", takefocus=True).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="Lock Vault", command=self.lock).pack(side="bottom", fill="x", pady=(16, 0))
-        ttk.Label(sidebar, text="LOCAL ENCRYPTED VAULT", style="Sidebar.TLabel").pack(side="bottom", anchor="w", pady=(16, 0))
-        ttk.Separator(sidebar).pack(side="bottom", fill="x", pady=(24, 0))
-        body = ttk.Frame(self.root, padding=PAGE_PAD)
-        body.pack(side="left", fill="both", expand=True)
-        ttk.Label(body, text=title, style="Title.TLabel").pack(anchor="w")
-        ttk.Label(body, text=subtitle, style="Muted.TLabel", wraplength=650).pack(anchor="w", pady=(4, 16))
-        body.bind("<Configure>", lambda event: self.wrap_labels(body, event.width))
+        label(sidebar, "SecureLock", size=24, bold=True).pack(anchor="w", padx=24, pady=(28, 0))
+        label(sidebar, "PERSONAL SECURITY", size=10, color=MUTED).pack(anchor="w", padx=24, pady=(2, 34))
+        for icon, text, command in (("▦", "Dashboard", self.dashboard), ("▤", "Credential Vault", self.vault_page),
+                                    ("◇", "Password Generator", self.generator_page), ("ⓘ", "About & Credits", self.about_page)):
+            active = text == title
+            nav = button(sidebar, f"{icon}   {text}", command, anchor="w", width=188)
+            nav.configure(fg_color=ELEVATED if active else "transparent", text_color=TEXT if active else MUTED)
+            nav.pack(padx=16, pady=4)
+        button(sidebar, "Lock Vault", self.lock, width=188).pack(side="bottom", padx=16, pady=20)
+        label(sidebar, "●  Local encrypted vault", size=11, color=SUCCESS).pack(side="bottom", padx=20)
+        content = ctk.CTkFrame(self.root, fg_color=BACKGROUND, corner_radius=0)
+        content.pack(side="left", fill="both", expand=True, padx=26, pady=22)
+        header = ctk.CTkFrame(content, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 16))
+        label(header, title, size=28, bold=True).pack(anchor="w")
+        description = label(header, subtitle, color=MUTED, wraplength=650)
+        description.pack(anchor="w", pady=(4, 0))
+        header.bind("<Configure>", lambda event: description.configure(wraplength=max(200, event.width - 10)))
+        body = (ctk.CTkFrame(content, fg_color=BACKGROUND, corner_radius=0) if title == "Credential Vault"
+                else ctk.CTkScrollableFrame(content, fg_color=BACKGROUND, corner_radius=0))
+        body.pack(fill="both", expand=True)
         return body
 
-    @staticmethod
-    def wrap_labels(body, width):
-        """Keep descriptive text inside the available page width on resize."""
-        for child in body.winfo_children():
-            if isinstance(child, ttk.Label) and child.cget("wraplength"):
-                child.configure(wraplength=max(200, width - 60))
-
-    def about_page(self):
-        if self.controller.session is None:
-            self.show_login()
-            return
-        body = self.shell("About & Credits", "SecureLock — Personal Digital Security Management System")
-        ttk.Label(body, padding=0, text="Python Programming — Project-Based Learning (PBL)",
-                  style="Heading.TLabel", wraplength=600).pack(anchor="w")
-        ttk.Label(body, padding=0, text="Development Build", style="Muted.TLabel").pack(anchor="w", pady=(0, 8))
-        ttk.Label(body, padding=0, text="A desktop application for managing personal credentials in a local encrypted vault, "
-                  "generating passwords and reviewing password strength.",
-                  wraplength=600).pack(anchor="w", pady=(0, 12))
-        credits = ttk.Frame(body, padding=(18, 10), style="Panel.TFrame")
-        credits.pack(fill="x")
-        ttk.Label(credits, padding=0, text="Developed By", style="Panel.TLabel",
-                  font=(FONT, 13, "bold")).pack(anchor="w")
-        for member in ("1. Nikunj Joshi — 25/SET/BCSE/137", "2. Khushi — 25/SET/BCSE/148",
-                       "3. Mansi — 25/SET/BCSE/131", "4. Sumit Kumar — 25/SET/BCSE/145"):
-            ttk.Label(credits, padding=0, text=member, style="Panel.TLabel").pack(anchor="w", pady=3)
-        academic = ttk.Frame(body, padding=(18, 12), style="Panel.TFrame")
-        academic.pack(fill="x", pady=(12, 0))
-        ttk.Label(academic, padding=0, text="Academic Details", style="Panel.TLabel", font=(FONT, 13, "bold")).pack(anchor="w", pady=(8, 0))
-        ttk.Label(academic, padding=0, text="Programme: B.Tech Computer Science and Engineering\n"
-                  "Subject: Python Programming\n"
-                  "Subject Code: 5.0CE202E02H\n"
-                  "Under the Guidance of:\nDr. Rosy Madan (Professor)",
-                  wraplength=600, justify="left", style="Panel.TLabel").pack(anchor="w")
-        ttk.Label(body, padding=0, text="Developed as part of the Python Programming PBL.",
-                  style="Muted.TLabel", wraplength=600).pack(anchor="w", pady=(8, 0))
-
     def dashboard(self):
-        body = self.shell("Welcome to SecureLock", "Your personal security overview")
+        body = self.shell("Dashboard", "A clearer view of your passwords. A safer place to start.")
         if body is None:
             return
         stats = self.controller.statistics()
-        cards = ttk.Frame(body)
-        cards.pack(fill="x", pady=(0, 8))
-        for index, (key, label) in enumerate((("total", "Saved credentials"), ("strong", "Strong passwords"),
-                                               ("weak", "Weak passwords"), ("reused", "Reused passwords"))):
-            cards.columnconfigure(index % 2, weight=1, uniform="statistics")
-            card = ttk.Frame(cards, padding=(20, 12), style="Panel.TFrame")
-            card.grid(row=index // 2, column=index % 2, sticky="nsew", padx=(0, SPACE) if index % 2 == 0 else (SPACE, 0), pady=SPACE)
-            ttk.Label(card, text=str(stats[key]), style="Number.TLabel").pack(anchor="w")
-            ttk.Label(card, text=label, style="Panel.TLabel").pack(anchor="w")
-        ttk.Label(body, text="Security recommendations", style="Heading.TLabel").pack(anchor="w", pady=(12, 4))
-        recommendations = ttk.Frame(body, padding=(16, 10), style="Panel.TFrame")
-        recommendations.pack(fill="x", pady=(4, 12))
-        recommendations.bind("<Configure>", lambda event:
-                             self.wrap_labels(recommendations, event.width))
+        metrics = ctk.CTkFrame(body, fg_color="transparent")
+        metrics.pack(fill="x", pady=(0, 16))
+        for i, (icon, key, title, color) in enumerate((("▤", "total", "Credentials", ACCENT), ("✓", "strong", "Strong", SUCCESS),
+                                                      ("!", "weak", "Weak", WARNING), ("↻", "reused", "Reused", WARNING))):
+            metrics.grid_columnconfigure(i, weight=1, uniform="metric")
+            panel = card(metrics)
+            panel.grid(row=0, column=i, sticky="nsew", padx=(0, 10) if i < 3 else 0)
+            label(panel, icon, size=22, color=color).pack(anchor="w", padx=16, pady=(12, 0))
+            label(panel, str(stats[key]), size=28, bold=True).pack(anchor="w", padx=16)
+            label(panel, title, color=MUTED).pack(anchor="w", padx=16, pady=(0, 12))
+        split = ctk.CTkFrame(body, fg_color="transparent")
+        split.pack(fill="x", pady=(0, 16))
+        split.grid_columnconfigure(0, weight=1, uniform="overview")
+        split.grid_columnconfigure(1, weight=1, uniform="overview")
+        health, advice = card(split), card(split)
+        health.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        advice.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
+        label(health, "Password health", size=18, bold=True).pack(anchor="w", padx=20, pady=(18, 4))
+        total = stats["total"]
+        percent = 100 * stats["strong"] / total if total else 0
+        label(health, f"{percent:.0f}% strong" if total else "No passwords yet", size=26, bold=True, color=SUCCESS).pack(anchor="w", padx=20)
+        label(health, f"{stats['strong']} strong / {total} total credentials", color=MUTED).pack(anchor="w", padx=20, pady=(0, 12))
+        for key, color in (("strong", SUCCESS), ("moderate", WARNING), ("weak", ERROR)):
+            line = ctk.CTkFrame(health, fg_color="transparent")
+            line.pack(fill="x", padx=20, pady=5)
+            label(line, f"{key.title()}   {stats[key]}", color=color).pack(anchor="w")
+            progress = ctk.CTkProgressBar(line, progress_color=color, fg_color=ELEVATED, height=6)
+            progress.pack(fill="x", pady=(3, 5))
+            progress.set(stats[key] / total if total else 0)
+        label(health, "Rule-based estimates, not a security score.", size=11, color=MUTED, wraplength=280).pack(anchor="w", padx=20, pady=(8, 18))
+        label(advice, "Recommended next steps", size=18, bold=True).pack(anchor="w", padx=20, pady=(18, 12))
         for recommendation in self.controller.recommendations():
-            label = ttk.Label(recommendations, text=recommendation, wraplength=650,
-                              style="Caption.TLabel")
-            label.pack(anchor="w", fill="x")
-        actions = ttk.Frame(body)
-        actions.pack(anchor="w")
-        self.button(actions, "Open vault", self.vault_page, True)
+            item = label(advice, "•  " + recommendation, color=MUTED, wraplength=280)
+            item.pack(fill="x", padx=20, pady=(0, 12))
+            advice.bind("<Configure>", lambda event, widget=item: widget.configure(wraplength=max(180, event.width - 40)), add="+")
+        actions = section(body, "Quick actions")
+        self.button(actions, "+ Add credential", self.credential_form, True)
         self.button(actions, "Generate password", self.generator_page)
+        self.button(actions, "Open vault", self.vault_page)
 
     def vault_page(self):
-        body = self.shell("Credential Vault", "Passwords stay hidden. Select a record to edit, delete or reveal it.")
+        body = self.shell("Credential Vault", "Manage your logins. Passwords stay hidden until you choose to reveal them.")
         if body is None:
             return
-        toolbar = ttk.Frame(body, padding=(12, 4), style="Panel.TFrame")
-        toolbar.pack(fill="x")
-        search = ttk.Frame(toolbar, style="Panel.TFrame")
-        search.pack(fill="x")
+        toolbar = section(body, "Your credentials")
+        label(toolbar, "Search website / service", size=11, color=MUTED).pack(anchor="w", pady=(4, 0))
+        search = ctk.CTkFrame(toolbar, fg_color="transparent")
+        search.pack(fill="x", pady=(0, 8))
         self.query = tk.StringVar(self.root)
-        ttk.Label(search, text="Find website", style="Panel.TLabel").pack(side="left", padx=(0, 10))
-        entry = ttk.Entry(search, textvariable=self.query)
-        entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        self.button(search, "Clear", self.clear_search)
-        self.button(search, "Reset", self.reset_filters)
-        filters = ttk.Frame(toolbar, style="Panel.TFrame")
-        filters.pack(fill="x", pady=(8, 0))
-        ttk.Label(filters, text="Show", style="Panel.TLabel").pack(side="left", padx=(0, 10))
+        entry(search, textvariable=self.query, placeholder_text="Search by website or service…").pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.button(search, "+ Add credential", self.credential_form, True)
+        filters = ctk.CTkFrame(toolbar, fg_color="transparent")
+        filters.pack(fill="x")
         self.strength_filter = tk.StringVar(self.root, value="All")
-        choice = ttk.Combobox(filters, textvariable=self.strength_filter, state="readonly",
-                              values=("All", "Weak", "Moderate", "Strong", "Reused"), width=14)
-        choice.pack(side="left")
+        ctk.CTkSegmentedButton(filters, values=["All", "Weak", "Moderate", "Strong", "Reused"],
+                               variable=self.strength_filter, selected_color=ACCENT, unselected_color=ELEVATED,
+                               height=32, font=("Segoe UI", 13),
+                               command=lambda _: self.refresh_table()).pack(side="left", padx=(0, 16))
         self.alphabetical = tk.BooleanVar(self.root, value=True)
-        ttk.Checkbutton(filters, text="Website A–Z", style="Panel.TCheckbutton", variable=self.alphabetical,
-                        command=self.refresh_table).pack(side="left", padx=12)
-        choice.bind("<<ComboboxSelected>>", lambda event: self.refresh_table())
+        ctk.CTkSwitch(filters, text="A–Z", variable=self.alphabetical, command=self.refresh_table,
+                       progress_color=ACCENT, width=80).pack(side="left", padx=(0, 8))
+        self.button(filters, "Reset filters", self.reset_filters)
         self.query.trace_add("write", lambda *_: self.refresh_table())
-        entry.bind("<Return>", lambda event: self.refresh_table())
-        table = ttk.Frame(body)
-        table.pack(fill="both", expand=True, pady=16)
-        table.rowconfigure(0, weight=1)
-        table.columnconfigure(0, weight=1)
-        self.tree = ttk.Treeview(table, height=5, columns=("website", "username", "strength"), show="headings", selectmode="browse")
-        for name, title, width in (("website", "Website / Service", 230), ("username", "Username", 200),
-                                   ("strength", "Strength", 100)):
-            self.tree.heading(name, text=title)
-            self.tree.column(name, width=width, minwidth=80)
-        scroll = ttk.Scrollbar(table, orient="vertical", command=self.tree.yview)
-        horizontal = ttk.Scrollbar(table, orient="horizontal", command=self.tree.xview)
-        self.tree.configure(yscrollcommand=scroll.set, xscrollcommand=horizontal.set)
-        scroll.grid(row=0, column=1, sticky="ns")
-        horizontal.grid(row=1, column=0, sticky="ew")
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        self.tree.bind("<<TreeviewSelect>>", lambda event: self.hide_revealed())
-        actions = ttk.Frame(body)
-        actions.pack(anchor="w")
-        self.button(actions, "Add", self.credential_form, True)
+        self.rows = ctk.CTkScrollableFrame(body, fg_color=BACKGROUND, corner_radius=0, height=100)
+        detail = section(body, "Selected credential")
+        # Reserve the action panel before giving remaining height to the list.
+        detail.master.pack_configure(side="bottom")
+        self.revealed = self.secret()
+        actions = ctk.CTkFrame(detail, fg_color="transparent")
+        actions.pack(fill="x", pady=(6, 0))
+        self.reveal_entry = entry(actions, textvariable=self.revealed, show="•", state="readonly", width=140)
+        self.reveal_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.button(actions, "Show / Hide", self.toggle_revealed)
         self.button(actions, "Edit", self.edit_selected)
         self.button(actions, "Delete", self.delete_selected, danger=True)
-        self.button(actions, "Reveal / Hide", self.toggle_revealed)
-        self.revealed = self.secret()
-        self.reveal_entry = ttk.Entry(body, textvariable=self.revealed, show="•", state="readonly")
-        self.reveal_entry.pack(fill="x", pady=8)
-        self.feedback = ttk.Label(body, text="", style="Muted.TLabel", wraplength=650)
+        self.feedback = label(detail, "", color=MUTED, wraplength=600)
         self.feedback.pack(anchor="w")
+        self.rows.pack(fill="both", expand=True, pady=(0, 10))
         self.refresh_table()
 
     def reset_filters(self):
@@ -346,21 +246,45 @@ class SecureLockApp:
 
     def refresh_table(self):
         self.hide_revealed()
-        self.tree.delete(*self.tree.get_children())
-        records = self.controller.filtered_records(
-            self.query.get(), self.strength_filter.get(), self.alphabetical.get())
+        self.selected_id = None
+        self.row_buttons = {}
+        for child in self.rows.winfo_children():
+            child.destroy()
+        records = self.controller.filtered_records(self.query.get(), self.strength_filter.get(), self.alphabetical.get())
+        if not records:
+            empty = section(self.rows, "No credentials found", "Add your first login, or reset your search and filters.")
+            button(empty, "+ Add credential", self.credential_form, accent=True).pack(anchor="w")
         for record in records:
-            self.tree.insert("", "end", iid=record.id,
-                             values=(record.website, record.username, estimate_strength(record.password)))
-        self.feedback.configure(foreground=MUTED, text=(f"{len(records)} credentials shown" if records else
-                                      "No credentials match. Clear or reset filters, or add your first credential."))
+            # Only these safe fields enter row widgets. Passwords never do.
+            row = card(self.rows)
+            row.pack(fill="x", pady=(0, 8))
+            row.grid_columnconfigure(0, weight=3)
+            row.grid_columnconfigure(1, weight=3)
+            website = label(row, record.website, bold=True)
+            username = label(row, record.username, color=MUTED)
+            rating = estimate_strength(record.password)
+            strength = label(row, rating.title(), color=self.strength_color(rating))
+            for i, widget in enumerate((website, username, strength)):
+                widget.grid(row=0, column=i, sticky="ew", padx=14, pady=16)
+                widget.configure(wraplength=200 if i < 2 else 90)
+                widget.bind("<Button-1>", lambda event, identifier=record.id: self.select_record(identifier))
+            choose = button(row, "Select", lambda identifier=record.id: self.select_record(identifier), width=76)
+            choose.grid(row=0, column=3, padx=(0, 12))
+            self.row_buttons[record.id] = choose
+            row.bind("<Button-1>", lambda event, identifier=record.id: self.select_record(identifier))
+        self.feedback.configure(text=f"{len(records)} credentials shown", text_color=MUTED)
+
+    def select_record(self, identifier):
+        self.hide_revealed()
+        self.selected_id = identifier
+        for record_id, widget in self.row_buttons.items():
+            widget.configure(text="Selected" if record_id == identifier else "Select", fg_color=ACCENT if record_id == identifier else ELEVATED)
 
     def selected(self):
-        selection = self.tree.selection()
-        if not selection:
+        if self.selected_id is None:
             messagebox.showinfo("Select a credential", "Select a row in the vault first.", parent=self.root)
             return None
-        return next((record for record in self.controller.records() if record.id == selection[0]), None)
+        return next((record for record in self.controller.records() if record.id == self.selected_id), None)
 
     def toggle_revealed(self):
         if self.revealed.get():
@@ -387,50 +311,54 @@ class SecureLockApp:
             messagebox.showerror("Not saved", str(error), parent=self.root)
         else:
             self.refresh_table()
-            self.feedback.configure(text="Credential deleted and saved.", foreground=SUCCESS)
+            self.feedback.configure(text="Credential deleted and saved.", text_color=SUCCESS)
 
     def credential_form(self, record=None, initial_password=""):
+        if self.controller.session is None:
+            self.show_login()
+            return
         if self.dialog is not None:
             self.dialog.lift()
             return
         self.hide_revealed()
-        dialog = tk.Toplevel(self.root)
+        dialog = ctk.CTkToplevel(self.root)
         self.dialog = dialog
         dialog.title("Edit credential" if record else "Add credential")
-        dialog.configure(background=BACKGROUND)
+        dialog.configure(fg_color=BACKGROUND)
         dialog.geometry("560x620")
-        dialog.minsize(520, 620)
+        dialog.minsize(520, 560)
+        dialog.geometry(f"560x620+{self.root.winfo_rootx() + 240}+{self.root.winfo_rooty() + 10}")
         dialog.transient(self.root)
         dialog.grab_set()
-        form = ttk.Frame(dialog, padding=PAGE_PAD)
-        form.pack(fill="both", expand=True)
-        ttk.Label(form, text="Edit credential" if record else "Add credential",
-                  style="Heading.TLabel").pack(anchor="w", pady=(0, 14))
+        form = ctk.CTkScrollableFrame(dialog, fg_color=PANEL, corner_radius=16)
+        form.pack(fill="both", expand=True, padx=20, pady=20)
+        label(form, text="Edit credential" if record else "Add credential",
+                  size=24, bold=True).pack(anchor="w", pady=(0, 14))
         website = self.secret(record.website if record else "")
         username = self.secret(record.username if record else "")
         password = self.secret(record.password if record else initial_password)
         record_id = record.id if record else None
         variables = (website, username, password)
         entries = []
-        for label, variable in zip(("Website / Service", "Username", "Password"), variables):
-            ttk.Label(form, text=label).pack(anchor="w")
-            entry = ttk.Entry(form, textvariable=variable, show="•" if variable is password else "")
-            entry.pack(fill="x", pady=(0, 10))
-            entries.append(entry)
+        for field_name, variable in zip(("Website / Service", "Username", "Password"), variables):
+            label(form, text=field_name).pack(anchor="w")
+            widget = entry(form, textvariable=variable, show="•" if variable is password else "")
+            widget.pack(fill="x", pady=(0, 10))
+            entries.append(widget)
         visible = tk.BooleanVar(dialog, value=False)
-        ttk.Checkbutton(form, text="Show password", variable=visible,
+        ctk.CTkSwitch(form, text="Show password", variable=visible,
                         command=lambda: entries[2].configure(show="" if visible.get() else "•")).pack(anchor="w")
-        strength = ttk.Label(form, style="Muted.TLabel")
+        strength = label(form, color=MUTED)
         strength.pack(anchor="w")
         def update_strength(*_):
             rating = estimate_strength(password.get())
             strength.configure(text=f"Estimated strength: {rating.title()}",
-                               foreground=self.strength_color(rating))
+                               text_color=self.strength_color(rating))
         password.trace_add("write", update_strength)
         update_strength()
-        ttk.Button(form, text="Generate Password", command=lambda: self.generate_into_form(
+        button(form, text="Generate Password", command=lambda: self.generate_into_form(
             password, entries[2], visible)).pack(anchor="w", pady=8)
-        feedback = ttk.Label(form, text="", wraplength=420, foreground=ERROR)
+        feedback = label(form, text="", wraplength=420, color=ERROR)
         feedback.pack(fill="x")
 
         def dismiss():
@@ -442,12 +370,12 @@ class SecureLockApp:
             self.dialog = None
 
         def save():
-            for label, variable, entry in zip(("Website / Service", "Username", "Password"), variables, entries):
+            for field_name, variable, widget in zip(("Website / Service", "Username", "Password"), variables, entries):
                 if not variable.get().strip():
-                    feedback.configure(text=f"{label} is required. Enter non-space content.")
+                    feedback.configure(text=f"{field_name} is required. Enter non-space content.")
                     entries[2].configure(show="•")
                     visible.set(False)
-                    entry.focus_set()
+                    widget.focus_set()
                     return
             try:
                 if record_id is None:
@@ -461,9 +389,9 @@ class SecureLockApp:
             else:
                 dismiss()
                 self.vault_page()
-                self.feedback.configure(text="Credential saved successfully.", foreground=SUCCESS)
+                self.feedback.configure(text="Credential saved successfully.", text_color=SUCCESS)
 
-        actions = ttk.Frame(form)
+        actions = ctk.CTkFrame(form, fg_color="transparent")
         actions.pack(anchor="e", pady=8)
         self.button(actions, "Save credential", save, True)
         self.button(actions, "Cancel", dismiss)
@@ -474,7 +402,7 @@ class SecureLockApp:
 
     @staticmethod
     def strength_color(rating):
-        return {"strong": SUCCESS, "moderate": MUTED, "weak": ERROR}.get(rating, MUTED)
+        return {"strong": SUCCESS, "moderate": WARNING, "weak": ERROR}.get(rating, MUTED)
 
     @staticmethod
     def generate_into_form(password, entry, visible):
@@ -483,45 +411,47 @@ class SecureLockApp:
         visible.set(False)
         entry.configure(show="•")
 
+
     def generator_page(self):
-        body = self.shell("Password Generator", "Create a unique password locally. Nothing is copied to your clipboard.")
+        body = self.shell("Password Generator", "Long. Random. Unique. Generate a password entirely on your device.")
         if body is None:
             return
-        panel = ttk.Frame(body, padding=24, style="Panel.TFrame")
-        panel.pack(fill="x", pady=(0, 16))
-        ttk.Label(panel, text="Create a unique password", style="Panel.TLabel",
-                  font=(FONT, 16, "bold")).pack(anchor="w")
-        panel.bind("<Configure>", lambda event: self.wrap_labels(panel, event.width))
-        ttk.Label(panel, text="Adjust length below. Generated values remain hidden until you choose to show them.",
-                  style="Caption.TLabel", wraplength=580).pack(anchor="w")
-        controls = ttk.Frame(body, padding=20, style="Panel.TFrame")
-        controls.pack(fill="x")
-        ttk.Label(controls, text="Password length (8–128)", style="Panel.TLabel").pack(anchor="w")
-        length = tk.StringVar(self.root, value="16")
-        ttk.Spinbox(controls, from_=8, to=128, textvariable=length, width=10).pack(anchor="w", pady=8)
+        controls = section(body, "Build a better password", "Choose your options, then generate a fresh password.")
+        length = tk.IntVar(self.root, value=16)
+        length_label = label(controls, "16 characters", size=24, bold=True)
+        length_label.pack(anchor="w", pady=(8, 12))
+        slider = ctk.CTkSlider(controls, from_=8, to=128, number_of_steps=120, variable=length,
+                              progress_color=ACCENT, button_color=ACCENT,
+                              command=lambda value: length_label.configure(text=f"{round(value)} characters"))
+        slider.pack(fill="x", pady=(0, 4))
+        limits = ctk.CTkFrame(controls, fg_color="transparent")
+        limits.pack(fill="x")
+        label(limits, "8 characters", size=11, color=MUTED).pack(side="left")
+        label(limits, "128 characters", size=11, color=MUTED).pack(side="right")
         symbols = tk.BooleanVar(self.root, value=True)
-        ttk.Checkbutton(controls, text="Include symbols", style="Panel.TCheckbutton", variable=symbols).pack(anchor="w")
+        ctk.CTkSwitch(controls, text="Include symbols", variable=symbols, progress_color=ACCENT).pack(anchor="w", pady=20)
         self.generated = self.secret()
-        display = ttk.Entry(controls, textvariable=self.generated, show="•", state="readonly")
-        display.pack(fill="x", pady=(24, 8))
+        display = entry(controls, textvariable=self.generated, show="•", state="readonly")
+        display.pack(fill="x", pady=(8, 12))
         visible = tk.BooleanVar(self.root, value=False)
-        ttk.Checkbutton(controls, text="Show generated password", style="Panel.TCheckbutton", variable=visible,
-                        command=lambda: display.configure(show="" if visible.get() else "•")).pack(anchor="w")
-        strength = ttk.Label(controls, text="Generate a password to begin.", style="Caption.TLabel")
-        strength.pack(anchor="w", pady=10)
+        ctk.CTkSwitch(controls, text="Show password", variable=visible, progress_color=ACCENT,
+                       command=lambda: display.configure(show="" if visible.get() else "•")).pack(anchor="w")
+        strength = label(controls, "Generate a password to see its estimated strength.", color=MUTED)
+        strength.pack(anchor="w", pady=16)
+        meter = ctk.CTkProgressBar(controls, fg_color=ELEVATED)
+        meter.pack(fill="x", pady=(0, 20))
+        meter.set(0)
 
         def generate():
-            try:
-                password = generate_password(int(length.get()), use_symbols=symbols.get())
-            except (ValueError, TypeError):
-                messagebox.showerror("Invalid length", "Enter a whole number from 8 to 128.", parent=self.root)
-                return
+            password = generate_password(length.get(), use_symbols=symbols.get())
             self.generated.set(password)
-            display.configure(show="•")
             visible.set(False)
-            strength.configure(text=f"Estimated strength: {estimate_strength(password).title()}",
-                               foreground=self.strength_color(estimate_strength(password)))
-            use.state(["!disabled"])
+            display.configure(show="•")
+            rating = estimate_strength(password)
+            strength.configure(text=f"Estimated strength: {rating.title()}", text_color=self.strength_color(rating))
+            meter.configure(progress_color=self.strength_color(rating))
+            meter.set({"weak": .25, "moderate": .6, "strong": 1}[rating])
+            use.configure(state="normal")
 
         def use_password():
             password = self.generated.get()
@@ -529,11 +459,31 @@ class SecureLockApp:
                 self.vault_page()
                 self.credential_form(initial_password=password)
 
-        actions = ttk.Frame(body)
-        actions.pack(anchor="w", pady=12)
+        actions = ctk.CTkFrame(controls, fg_color="transparent")
+        actions.pack(fill="x")
         self.button(actions, "Generate password", generate, True)
         use = self.button(actions, "Use in Add Credential", use_password)
-        use.state(["disabled"])
+        use.configure(state="disabled")
+        label(controls, "Nothing is copied to your clipboard. Each new result starts hidden.", color=MUTED, wraplength=560).pack(anchor="w", pady=(10, 0))
+
+    def about_page(self):
+        body = self.shell("About & Credits", "SecureLock — Personal Digital Security Management System")
+        if body is None:
+            return
+        intro = section(body, "Built for personal digital security", "Python Programming — Project-Based Learning (PBL)")
+        label(intro, "Development Build", color=ACCENT).pack(anchor="w")
+        label(intro, "A local encrypted vault with credential management, password generation and explainable password health checks.", color=MUTED, wraplength=580).pack(anchor="w", pady=(8, 0))
+        team = section(body, "The project team")
+        for name, roll in (("Nikunj Joshi", "25/SET/BCSE/137"), ("Khushi", "25/SET/BCSE/148"),
+                           ("Mansi", "25/SET/BCSE/131"), ("Sumit Kumar", "25/SET/BCSE/145")):
+            row = ctk.CTkFrame(team, fg_color=ELEVATED, corner_radius=10)
+            row.pack(fill="x", pady=(8, 0))
+            label(row, name, bold=True).pack(side="left", padx=14, pady=10)
+            label(row, roll, color=MUTED).pack(side="right", padx=14)
+        academic = section(body, "Academic details")
+        label(academic, "Programme: B.Tech Computer Science and Engineering\nSubject: Python Programming\nSubject Code: 5.0CE202E02H", color=MUTED).pack(anchor="w", pady=8)
+        label(academic, "Under the Guidance of:\nDr. Rosy Madan (Professor)", size=16, bold=True).pack(anchor="w", pady=(8, 0))
+        label(body, "Developed as part of the Python Programming PBL.", color=MUTED).pack(anchor="w")
 
     def lock(self):
         self.controller.lock()
@@ -546,7 +496,9 @@ class SecureLockApp:
 
 
 def main() -> None:
-    """Launch using a project-relative, ignored encrypted vault location."""
-    root = tk.Tk()
+    """Launch using the existing project-relative encrypted vault location."""
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
+    root = ctk.CTk()
     SecureLockApp(root, VaultController(DEFAULT_VAULT))
     root.mainloop()
