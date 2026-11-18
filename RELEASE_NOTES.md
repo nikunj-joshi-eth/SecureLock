@@ -1,42 +1,43 @@
-# Release notes — final integration candidate
+# SecureLock v1.1.0 — proposed release notes
 
-Status: **Development Build**, prepared on `feature/final-ui-refresh`. This document does not announce a published release or a v1.0.0 tag.
+**Publication status:** Prepared for a future v1.1.0 GitHub release. **Not yet published.** Historical [v1.0.0](https://github.com/nikunj-joshi-eth/SecureLock/releases/tag/v1.0.0) remains unchanged.
 
-## Implemented functionality
+## Highlights
 
-- Master-password setup, authenticated unlock and manual session lock.
-- Scrypt key derivation and AES-256-GCM encrypted version-1 vaults.
-- Strict bounded envelope validation and atomic encrypted saves.
-- Credential add/search/edit/delete with persistence and failed-save rollback.
-- Local secure-random password generation, strength estimates and reuse statistics.
-- Dark Tkinter Dashboard, Credential Vault, Generator and About & Credits.
+The original Python PBL password manager is now presented through a redesigned **CustomTkinter desktop interface**.
 
-## Final UI refresh (Issue #18)
+- Refined dark-blue navigation, rounded controls, compact dashboard and clear screen hierarchy.
+- Dashboard overview of credential counts, password-strength distribution and rule-based recommendations (not a security certification).
+- Credential vault with live search, password-strength/reuse filtering, A–Z sorting, masked selection and clear edit/delete actions.
+- Local password generator with an 8–128 character length control, optional symbols, masked result, strength feedback and transfer into Add Credential.
+- Setup/login, credential forms and About & Credits redesigned while preserving the existing authentication and encrypted vault format.
+- Academic details: Python Programming, `5.0CE202E02H`, Dr. Rosy Madan (Professor), and the four-member PBL team.
 
-- Active sidebar navigation, consistent dark navy controls and clearer dashboard recommendations.
-- Live website search, strength/reuse filters, optional A–Z display sorting, clear/reset and friendly empty states.
-- Resizable Add/Edit forms with shared password generation, masking and live strength feedback.
-- Updated Subject Code 5.0CE202E02H and Under the Guidance of Dr. Rosy Madan (Professor); team unchanged.
-- No dependencies, crypto settings, stored ordering or version-1 format changes.
+## Security and compatibility
 
-## Integration improvements
+The encrypted application is run via `python main.py`; the original `securelock.py` is a separate insecure plaintext educational prototype and **must not** be used for real credentials. Stored encrypted vaults remain compatible with version 1 (Scrypt + AES-256-GCM). No password recovery, inactivity lock, multi-writer protection or independent security audit is included.
 
-- All session pages redirect to login if invoked while locked.
-- Missing-record updates/deletes report a selection problem instead of a misleading required-field error.
-- Descriptive page labels adapt wrapping to the available window width.
-- Ignore rules cover vaults outside the default directory, encrypted staging files and common secret-key files.
-- Updated landing page, current architecture description, contribution guidance, overview and actual QA report.
+## Testing
 
-The version-1 format, KDF parameters and authenticated metadata are unchanged. Existing encrypted vault compatibility is preserved. The original plaintext `securelock.py` is unchanged.
+The professional GUI branch's final test record reports **76 passing tests, zero skipped** on Windows with Python 3.14.3 and CustomTkinter 6.0.0. [GitHub Actions succeeded for the merge commit](https://github.com/nikunj-joshi-eth/SecureLock/actions/runs/44311858715). Tests include real-widget and mock-backed checks. Full keyboard-only/125% scaling and OS-permission acceptance remains incomplete; see [GUI_MANUAL_TESTS.md](GUI_MANUAL_TESTS.md).
 
-## Requirements and launch
+## Installation
 
-Python 3.10+ with Tkinter and `cryptography>=46.0.0` from `requirements.txt`. Install dependencies and run `python main.py`. A writable project `data/` location and filesystem hard-link support are needed for initial setup. See README for virtual-environment instructions.
+Python 3.10+ is documented as the project target; release verification occurred on Python 3.14.3. Windows PowerShell:
 
-## Verification and known limitations
+```powershell
+git clone https://github.com/nikunj-joshi-eth/SecureLock.git
+cd SecureLock
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe main.py
+```
 
-See [FINAL_TEST_REPORT.md](FINAL_TEST_REPORT.md) for actual automated results. Desktop interaction, minimum-window appearance, high-DPI behavior and screenshots remain pending; display-free tests are not manual GUI testing.
+No Windows EXE installer is included. GitHub's zip/tar source archives contain the Python source code. Use **fictional credentials only** in demonstrations.
 
-This is an educational project without an independent security audit. No recovery bypass, inactivity lock, concurrent-writer conflict handling, rollback detection or guaranteed memory erasure is provided. Strength ratings are estimates; offline guessing remains possible. Keep encrypted backups. `securelock.py` stores plaintext credentials and its master password and must only be used with fictional data.
+## Links
 
-The college report and presentation await the submission format. Merge, release publication and tagging require separate approval.
+- [Full changelog](CHANGELOG.md)
+- [Screenshots](docs/screenshots/)
+- [Academic project overview](PROJECT_OVERVIEW.md)
+- [Security policy](SECURITY.md)
