@@ -474,15 +474,13 @@ class SecureLockApp:
         label(intro, "Development Build", color=ACCENT).pack(anchor="w")
         label(intro, "A local encrypted vault with credential management, password generation and explainable password health checks.", color=MUTED, wraplength=580).pack(anchor="w", pady=(8, 0))
         team = section(body, "The project team")
-        for name, roll in (("Nikunj Joshi", "25/SET/BCSE/137"), ("Khushi", "25/SET/BCSE/148"),
-                           ("Mansi", "25/SET/BCSE/131"), ("Sumit Kumar", "25/SET/BCSE/145")):
+        for role in ("Authentication and encryption", "Credential management",
+                     "Password tools", "Desktop interface"):
             row = ctk.CTkFrame(team, fg_color=ELEVATED, corner_radius=10)
             row.pack(fill="x", pady=(8, 0))
-            label(row, name, bold=True).pack(side="left", padx=14, pady=10)
-            label(row, roll, color=MUTED).pack(side="right", padx=14)
+            label(row, role, bold=True).pack(side="left", padx=14, pady=10)
         academic = section(body, "Academic details")
         label(academic, "Programme: B.Tech Computer Science and Engineering\nSubject: Python Programming\nSubject Code: 5.0CE202E02H", color=MUTED).pack(anchor="w", pady=8)
-        label(academic, "Under the Guidance of:\nDr. Rosy Madan (Professor)", size=16, bold=True).pack(anchor="w", pady=(8, 0))
         label(body, "Developed as part of the Python Programming PBL.", color=MUTED).pack(anchor="w")
 
     def lock(self):

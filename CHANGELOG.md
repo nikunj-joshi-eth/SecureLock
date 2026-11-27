@@ -2,7 +2,12 @@
 
 Notable development milestones for SecureLock. GitHub commits and merged pull requests provide the authoritative change history.
 
-## Unreleased — proposed v1.1.0
+## Unreleased
+
+- Replaced personal details in application credits with module responsibilities.
+- Refreshed setup, screenshot and test documentation and clarified the historical release.
+
+## CustomTkinter interface (unreleased)
 
 - Complete CustomTkinter presentation redesign with rounded controls, redesigned dashboard and improved login, vault, generator and credits pages.
 - Four genuine screenshots using fictional demo records added under `docs/screenshots/`.
@@ -14,7 +19,7 @@ Notable development milestones for SecureLock. GitHub commits and merged pull re
 - Polished the original Tkinter interface with a consistent dark palette, navigation and usable forms.
 - Added live service-name search, password-strength and reuse filters, optional website sorting, and dashboard recommendations.
 - Added password generation within credential forms and live strength feedback.
-- Completed academic credits: Python Programming, subject code `5.0CE202E02H`, under the guidance of Dr. Rosy Madan (Professor).
+- Completed academic credits: Python Programming, subject code `5.0CE202E02H`, .
 - Added test coverage and project documentation, including the architecture, project overview, development timeline and final test report.
 - Original CLI plaintext prototype remains separate and explicitly marked insecure.
 

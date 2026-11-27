@@ -1,3 +1,9 @@
+# Release audit verification
+
+Windows with Python 3.14, cryptography 50.0.2 and CustomTkinter 6.0.0. The full unittest suite passed **76 tests**, including real widgets, encrypted CRUD, reopening, tamper rejection and save rollback. Bytecode compilation and `pip check` passed. Full manual high-DPI and accessibility review remain pending.
+
+## Earlier GUI verification
+
 # Professional GUI redesign verification
 
 Issue: #20. Branch: `feature/professional-gui`.

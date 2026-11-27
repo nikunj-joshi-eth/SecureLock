@@ -93,7 +93,7 @@ class CustomTkinterTests(unittest.TestCase):
         self.assertIn("50% strong", self.texts())
         self.assertIn("1 strong / 2 total", self.texts())
         self.app.about_page()
-        for expected in ("Nikunj Joshi", "Khushi", "Mansi", "Sumit Kumar", "5.0CE202E02H", "Dr. Rosy Madan"):
+        for expected in ("Authentication and encryption", "Credential management", "Password tools", "Desktop interface", "5.0CE202E02H"):
             self.assertIn(expected, self.texts())
 
     def test_search_filters_reveal_and_cleanup(self):

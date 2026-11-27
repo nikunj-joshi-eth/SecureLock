@@ -22,7 +22,7 @@ Setup validates and confirms the master password, derives a 256-bit key with Scr
 
 Credential records are immutable dataclasses with stable UUIDs. Required fields reject blank content while preserving entered values, including password spaces. Live search uses case-insensitive service substrings. The controller filters a display copy by strength or reused IDs and optionally sorts websites A–Z without changing stored order. Dashboard recommendations explain the existing statistics. Add/Edit forms generate passwords through the shared helper and show live strength feedback. Password generation uses `secrets` and guarantees selected character categories. Strength is an explainable heuristic; statistics count strength classes and all records sharing passwords.
 
-The dark CustomTkinter interface provides setup/login, Dashboard, Credential Vault, Password Generator and About & Credits. Passwords start hidden. Navigation clears tracked secrets; locking drops the session and closes dialogs. Academic details: Subject Code 5.0CE202E02H; Under the Guidance of Dr. Rosy Madan (Professor).
+The dark CustomTkinter interface provides setup/login, Dashboard, Credential Vault, Password Generator and About & Credits. Passwords start hidden. Navigation clears tracked secrets; locking drops the session and closes dialogs. Academic details: Subject Code 5.0CE202E02H.
 
 ## Python concepts demonstrated
 

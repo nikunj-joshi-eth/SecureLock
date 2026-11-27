@@ -2,12 +2,12 @@
 
 The table records the four planned responsibilities. It does **not** verify that a named member personally authored all related code, tests or documentation.
 
-| Member | Roll number | Planned responsibility |
-| --- | --- | --- |
-| Nikunj Joshi | 25/SET/BCSE/137 | Authentication, master-password verification, Scrypt/AES-GCM coordination and security integration |
-| Khushi | 25/SET/BCSE/148 | Credential CRUD, search and encrypted-storage integration |
-| Mansi | 25/SET/BCSE/131 | Password generation, strength estimation, duplicate detection and statistics |
-| Sumit Kumar | 25/SET/BCSE/145 | Tkinter interface, navigation, dialogs and frontend integration |
+| Member | Planned responsibility |
+| --- | --- |
+| Team member 1 | Authentication, master-password verification, Scrypt/AES-GCM coordination and security integration |
+| Team member 2 | Credential CRUD, search and encrypted-storage integration |
+| Team member 3 | Password generation, strength estimation, duplicate detection and statistics |
+| Team member 4 | Tkinter interface, navigation, dialogs and frontend integration |
 
 ## Evidence and attribution
 

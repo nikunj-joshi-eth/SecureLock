@@ -25,4 +25,4 @@ When the checks pass: open the repository **Releases → Draft a new release**, 
 
 Verify the release page exists, the tag points to the intended commit, source archives are accessible to authorized repository users, and the release notes accurately match the tagged code.
 
-Repository visibility is currently private. To make this repository public, the account owner must change visibility separately in Settings → General → Danger Zone, after checking commit history for secrets. Publishing a release does not change visibility.
+Verify repository visibility and audit reachable history and release archives for private data before publication. Review historical credits and identifiers as part of that audit.

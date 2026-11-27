@@ -83,7 +83,7 @@ benchmarking on target machines. See the maintained package's
 [Scrypt documentation](https://cryptography.io/en/stable/hazmat/primitives/key-derivation-functions/#scrypt)
 and [AES-GCM documentation](https://cryptography.io/en/stable/hazmat/primitives/aead/).
 
-## Storage (`storage.py`, Khushi with Nikunj)
+## Storage (`storage.py`, Team member 2 with Nikunj)
 
 `EncryptedEnvelope(version: int, salt: bytes, nonce: bytes, ciphertext: bytes)`
 is a frozen transport dataclass without constructor validation. Ciphertext is
@@ -115,7 +115,7 @@ leave encrypted staging files. The parent directory must already exist.
 Authentication coordinates in-memory serialization/model construction; storage
 only handles the encrypted envelope. No plaintext file helpers are provided.
 
-## Credential management (`credentials.py`, Khushi, implemented)
+## Credential management (`credentials.py`, Team member 2, implemented)
 
 | Signature | Output and behavior |
 | --- | --- |
@@ -135,7 +135,7 @@ collisions are retried before appending. Lists returned by list/search are
 separate lists containing the immutable records. These functions perform no
 file I/O and do not import authentication or storage.
 
-## Password tools (`password_tools.py`, Mansi, implemented)
+## Password tools (`password_tools.py`, Team member 3, implemented)
 
 | Signature | Output and behavior |
 | --- | --- |

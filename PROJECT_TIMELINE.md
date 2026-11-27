@@ -1,7 +1,7 @@
 # SecureLock — Development Timeline and Evidence
 
 **Project:** Personal Digital Security Management System (Python PBL)  
-**Team:** Nikunj Joshi (137), Khushi (148), Mansi (131), Sumit Kumar (145)
+**Team:** Team member 1 (137), Team member 2 (148), Team member 3 (131), Team member 4 (145)
 
 This document records the project's planned 10-working-day sequence and current implementation checkpoints. **Working days are relative phases, not claims about when the work happened.** GitHub commits and pull requests are the source of truth for dates and actual changes. Proposed module ownership is not proof of individual authorship.
 
@@ -20,10 +20,10 @@ This document records the project's planned 10-working-day sequence and current 
 
 ## Proposed module ownership
 
-- **Nikunj Joshi (137):** Authentication, encryption coordination, integration
-- **Khushi (148):** Credential management and storage integration
-- **Mansi (131):** Password generator, strength/reuse detection, security statistics
-- **Sumit Kumar (145):** Tkinter desktop GUI and interaction
+- **Team member 1 (137):** Authentication, encryption coordination, integration
+- **Team member 2 (148):** Credential management and storage integration
+- **Team member 3 (131):** Password generator, strength/reuse detection, security statistics
+- **Team member 4 (145):** Tkinter desktop GUI and interaction
 
 Record actual contributions through individual GitHub commits and reviewed PRs; do not equate planned ownership with completed authorship.
 

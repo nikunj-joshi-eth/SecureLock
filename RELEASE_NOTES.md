@@ -11,7 +11,7 @@ The original Python PBL password manager is now presented through a redesigned *
 - Credential vault with live search, password-strength/reuse filtering, A–Z sorting, masked selection and clear edit/delete actions.
 - Local password generator with an 8–128 character length control, optional symbols, masked result, strength feedback and transfer into Add Credential.
 - Setup/login, credential forms and About & Credits redesigned while preserving the existing authentication and encrypted vault format.
-- Academic details: Python Programming, `5.0CE202E02H`, Dr. Rosy Madan (Professor), and the four-member PBL team.
+- Academic details: Python Programming, `5.0CE202E02H`, the four-member PBL team.
 
 ## Security and compatibility
 

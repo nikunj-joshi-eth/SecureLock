@@ -5,8 +5,7 @@
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Interface CustomTkinter](https://img.shields.io/badge/Interface-CustomTkinter-334155)
 ![Release v1.0.0](https://img.shields.io/badge/Release-v1.0.0-64748b)
-![Latest GUI CustomTkinter](https://img.shields.io/badge/GUI-CustomTkinter-4F8FF7)
-![Tests](https://img.shields.io/badge/GUI%20branch%20tests-76%20passed-238636)
+![Tests](https://img.shields.io/badge/Audit%20tests-76%20passed-238636)
 
 A Python desktop application for managing personal login credentials in a local encrypted vault, generating passwords, and reviewing password strength and reuse. Developed as a second-year B.Tech Python Programming PBL project.
 
@@ -23,7 +22,7 @@ A Python desktop application for managing personal login credentials in a local 
 - Live website search, strength/reuse filters, reset controls and optional A–Z display sorting.
 - In-form password generation and live strength feedback; masked results by default.
 - Dashboard recommendations derived from existing counts, without a security score.
-- Dark CustomTkinter interface with About & Credits and four-member team details.
+- Dark CustomTkinter interface with About & Credits and four project module labels.
 
 ## Technologies
 
@@ -61,7 +60,7 @@ Genuine CustomTkinter application captures at 1180×700, using only fictional da
 | Credential Vault | [Vault and fixed actions](docs/screenshots/vault.png) |
 | Password Generator | [Generator controls](docs/screenshots/generator.png) |
 
-These are genuine captures from the fictional demo vault. [About & Credits](docs/screenshots/) will be captured separately before final academic submission.
+The gallery covers four views using fictional records. The About & Credits view is covered by widget tests.
 
 See [verification results](FINAL_TEST_REPORT.md) and the pending
 [manual acceptance checklist](GUI_MANUAL_TESTS.md). Full high-DPI acceptance
@@ -86,18 +85,18 @@ main.py → CustomTkinter view → VaultController
 | `securelock_app/password_tools.py` | Generation, strength, reuse and statistics |
 | `securelock_app/gui/` | Display-independent controller and CustomTkinter interface |
 | `tests/` | Automated tests with fictional temporary data |
-| `securelock.py` | Unchanged, insecure plaintext CLI prototype |
+| `securelock.py` | Insecure plaintext CLI prototype |
 
 See [architecture](ARCHITECTURE.md), [interface contracts](INTERFACES.md), [development timeline](PROJECT_TIMELINE.md), [project overview](PROJECT_OVERVIEW.md) and [release notes](RELEASE_NOTES.md).
 
 ## Team and proposed responsibilities
 
-| Member | Roll number | Planned responsibility |
-| --- | --- | --- |
-| Nikunj Joshi | 25/SET/BCSE/137 | Authentication, encryption coordination and integration |
-| Khushi | 25/SET/BCSE/148 | Credential management and storage integration |
-| Mansi | 25/SET/BCSE/131 | Password tools and security statistics |
-| Sumit Kumar | 25/SET/BCSE/145 | Desktop GUI and interaction |
+| Member | Planned responsibility |
+| --- | --- |
+| Team member 1 | Authentication, encryption coordination and integration |
+| Team member 2 | Credential management and storage integration |
+| Team member 3 | Password tools and security statistics |
+| Team member 4 | Desktop GUI and interaction |
 
 These are planned roles, not verified individual authorship. See [CONTRIBUTIONS.md](CONTRIBUTIONS.md); commits and reviewed PRs provide contribution evidence.
 
@@ -131,10 +130,7 @@ Subject to review and testing: inactivity locking, accessible layout and high-DP
 - Programme: B.Tech Computer Science and Engineering, second year
 - Subject: Python Programming — Project-Based Learning
 - Subject Code: 5.0CE202E02H
-- Under the Guidance of: Dr. Rosy Madan (Professor)
 - Build status: Development Build; final manual evaluation pending
-
-The final academic report and presentation will be prepared only after the college submission format is available. No final release tag has been created as part of this integration.
 
 ## Project maintenance and GitHub workflow
 
@@ -145,7 +141,7 @@ The final academic report and presentation will be prepared only after the colle
 - [GitHub issue templates](.github/ISSUE_TEMPLATE/) and [pull request template](.github/pull_request_template.md) — consistent reports and reviews.
 - [Windows test workflow](.github/workflows/tests.yml) — executes automated tests on supported Python versions for pushes and pull requests. Its successful execution must be verified in the **Actions** tab; file presence is not proof that CI passed.
 
-**Repository status:** The GitHub repository is private. A published release does not automatically change visibility. There is no prebuilt Windows installer, no genuine screenshot gallery yet, and no independently validated security certification.
+GitHub publishes source releases. Use the installation steps above to run the application from source.
 
 ## Versions and public demonstration
 
@@ -153,3 +149,7 @@ The final academic report and presentation will be prepared only after the colle
 - The modern **CustomTkinter interface** was merged in [PR #21](https://github.com/nikunj-joshi-eth/SecureLock/pull/21). Its [Windows GitHub Actions run](https://github.com/nikunj-joshi-eth/SecureLock/actions/runs/44311858715) succeeded.
 - **v1.1.0 is the next proposed release**, not yet published. See [release notes](RELEASE_NOTES.md) and [publication checklist](RELEASING.md).
 - Only use fictional credentials for demonstrations. The repository contains an intentionally insecure, clearly labelled legacy CLI prototype; launch the encrypted desktop program with `python main.py`.
+
+## Licensing and dependencies
+
+The repository has no project license. Runtime packages are `cryptography` (Apache-2.0 or BSD-3-Clause) and `customtkinter` (the upstream LICENSE is MIT, while the 6.0.0 package metadata says CC0), with their transitive dependencies and the platform's Python/Tk runtime.

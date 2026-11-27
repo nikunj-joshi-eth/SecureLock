@@ -3,10 +3,10 @@ SecureLock - Personal Digital Security Management System
 Python PBL Project | Initial Command-Line Version
 
 Project Credits
-1. Nikunj Joshi (25/SET/BCSE/137)
-2. Khushi (25/SET/BCSE/148)
-3. Mansi (25/SET/BCSE/131)
-4. Sumit (25/SET/BCSE/145)
+1. Team member 1
+2. Team member 2
+3. Team member 3
+4. Team member 4
 
 IMPORTANT:
 This is an educational prototype. The master password and saved credentials
@@ -28,10 +28,10 @@ def show_credits():
     print("                 MANAGEMENT SYSTEM")
     print("=" * 54)
     print("Project Team:")
-    print("1. Nikunj Joshi (25/SET/BCSE/137)")
-    print("2. Khushi      (25/SET/BCSE/148)")
-    print("3. Mansi       (25/SET/BCSE/131)")
-    print("4. Sumit       (25/SET/BCSE/145)")
+    print("1. Team member 1")
+    print("2. Team member 2")
+    print("3. Team member 3")
+    print("4. Team member 4")
     print("=" * 54)
     print("Educational prototype - do not store real passwords yet.\n")
 
